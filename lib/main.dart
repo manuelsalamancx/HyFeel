@@ -2,6 +2,7 @@ import 'package:flutter/material.dart'; //importamos el conjunto de widgets visu
 import 'contents.dart';
 import 'tests.dart';
 import 'home.dart';
+import 'connect.dart';
 
 // PUNTO DE ENTRADA PRINCIPAL
 void main() {
@@ -64,11 +65,13 @@ class _PaginaBaseState extends State<PaginaBase> {
     const PantallaPrincipal(), // Tu pantalla del botón (Índice 0)
     const PantallaContenidos(), // La nueva pantalla de texto (Índice 1)
     const PantallaTests(),
+    const PantallaConexion(),
   ];
   final List<String> _fondos = [
     'assets/images/bg_1.png',
     'assets/images/bg_2.png',
     'assets/images/bg_3.png',
+    'assets/images/bg_2.png',
   ];
 
   @override //interfaz grafica, se crea con build
@@ -149,7 +152,7 @@ class _PaginaBaseState extends State<PaginaBase> {
             NavigationDestination(
               icon: Icon(Icons.touch_app_outlined),
               selectedIcon: Icon(Icons.touch_app),
-              label: 'Monitorización',
+              label: 'Home',
             ),
             NavigationDestination(
               icon: Icon(Icons.library_books_outlined),
@@ -160,6 +163,11 @@ class _PaginaBaseState extends State<PaginaBase> {
               icon: Icon(Icons.quiz_outlined),
               selectedIcon: Icon(Icons.quiz),
               label: 'Tests',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.settings_input_antenna_outlined),
+              selectedIcon: Icon(Icons.settings_input_antenna),
+              label: 'Monitorización',
             ),
           ],
         ),
