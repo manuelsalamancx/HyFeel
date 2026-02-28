@@ -96,7 +96,7 @@ class _PaginaBaseState extends State<PaginaBase> {
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        foregroundColor: Colors.blue[900],
+        foregroundColor: const Color.fromARGB(255, 13, 71, 161),
       ),
 
       // El cuerpo cambia según el índice seleccionado
@@ -186,11 +186,11 @@ class PantallaPrincipal extends StatelessWidget {
         children: [
           // --- SECCIÓN: BIENVENIDA ---
           const Text(
-            "Resumen del Sistema",
+            "El futuro esta en tus manos.",
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Color.fromARGB(255, 13, 71, 161),
             ),
           ),
           const SizedBox(height: 20),
@@ -244,14 +244,14 @@ class PantallaPrincipal extends StatelessWidget {
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.white70,
+            color: Colors.white,
           ),
         ),
         TextButton(
           onPressed: accion,
           child: const Text(
             "Ver más >",
-            style: TextStyle(color: Colors.cyanAccent),
+            style: TextStyle(color: Color.fromARGB(255, 13, 71, 161)),
           ),
         ),
       ],
