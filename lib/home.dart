@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'main.dart';
 
 class PantallaHome extends StatefulWidget {
+  // se usa statefulwiget para añadir animaciones de cara al futuro
   const PantallaHome({super.key});
 
   @override
@@ -12,12 +13,13 @@ class _PantallaHomeState extends State<PantallaHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //construye el lienzo
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/background_home.png'),
+            image: AssetImage('assets/images/background_home.png'), //fondo
             fit: BoxFit.cover,
           ),
         ),
@@ -81,7 +83,12 @@ class _PantallaHomeState extends State<PantallaHome> {
                     icono: Icons.insights,
                     titulo: "Inicio",
                     subtitulo: "Descubre todo y más",
-                    colorFondo: const Color.fromRGBO(135, 200, 253, 1),
+                    colorFondo: const Color.fromRGBO(
+                      135,
+                      200,
+                      253,
+                      1,
+                    ), //cada uno de los botones
                     colorTexto: Colors.white,
                     onTap: () {
                       Navigator.push(
@@ -185,6 +192,7 @@ class _PantallaHomeState extends State<PantallaHome> {
 // --- WIDGET AUXILIAR (COMPONENTE REUTILIZABLE) ---
 // Esto es buena práctica de ingeniería: "Don't Repeat Yourself" (DRY)
 class _BotonAcceso extends StatelessWidget {
+  //marco del boton
   final IconData icono;
   final String titulo;
   final String subtitulo;
@@ -208,7 +216,7 @@ class _BotonAcceso extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       clipBehavior: Clip.antiAlias, // Recorta el efecto de "ola" al pulsar
       child: InkWell(
-        onTap: onTap,
+        onTap: onTap, //ESTILO DEL BOTON
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
           child: Row(

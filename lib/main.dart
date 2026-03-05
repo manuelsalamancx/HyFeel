@@ -9,23 +9,26 @@ void main() {
   runApp(const MiTFGApp());
 }
 
-// WIDGET RAÍZ (Configuración General)
+// CONFIGURACION GENERAL PARAMETROS DE LA APP
 class MiTFGApp extends StatelessWidget {
-  const MiTFGApp({super.key});
+  //statelesswidget define la clase y no mutara por si misma
+  const MiTFGApp({
+    super.key,
+  }); //constructor de la clase -> usara keys para la identificación del widget en el arbol
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'HyFeel', // NOMBRE DE LA APLICACIÓN
       debugShowCheckedModeBanner: false,
-      home: const PantallaHome(),
+      home: const PantallaHome(), // deberia de ser home: const PaginaBase()
       theme: ThemeData(
-        // Tema principal de la app
+        // Tema principal de la app -> COLOR DEL TEMA
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromRGBO(119, 235, 243, 1),
         ),
-        useMaterial3: true,
-        fontFamily: 'MiFuenteTFG',
+        useMaterial3: true, //estilo UI
+        fontFamily: 'MiFuenteTFG', //FUENTE
         textTheme: const TextTheme(
           displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
           bodyLarge: TextStyle(fontSize: 16),
@@ -35,8 +38,9 @@ class MiTFGApp extends StatelessWidget {
   }
 }
 
-// ESTA ES LA CLASE QUE CONTROLA LA NAVEGACIÓN ---> Padre
+// ESTA ES LA CLASE QUE CONTROLA LA NAVEGACIÓN ---> Padre -> EL INDICE NOS DICE A QUE PESTAÑA IRNOS, EN ESTE CASO LA CERO QUE ES LA PRINCIPAL
 class PaginaBase extends StatefulWidget {
+  //statefulwidget - puede cambiar
   final int indiceInicial;
 
   const PaginaBase({super.key, this.indiceInicial = 0});
@@ -56,14 +60,17 @@ class _PaginaBaseState extends State<PaginaBase> {
 
   // --- FUNCIÓN PARA CAMBIAR DE PESTAÑA DESDE OTROS WIDGETS ---
   void _cambiarPestana(int indice) {
+    //notifica al framework que el estado ha cambiado y se guarda en indice.
     setState(() {
-      _indiceActual = indice;
+      _indiceActual = indice; //para luego ser pasado a indice
     });
   }
 
   // Convertimos _pantallas en un 'getter' (get) para poder pasarle la función _cambiarPestana a la PantallaPrincipal
   List<Widget> get _pantallas => [
+    //el getter nos permite cambiar las pestagnas dentro de la pantalla
     PantallaPrincipal(
+      //botones de ver mas y redirigir a otras pestañas
       onVerMasContenidos: () =>
           _cambiarPestana(1), // Manda al índice 1 (Contenidos)
       onVerMasTests: () => _cambiarPestana(2), // Manda al índice 2 (Tests)
@@ -74,6 +81,8 @@ class _PaginaBaseState extends State<PaginaBase> {
   ];
 
   final List<String> _fondos = [
+    //diccionario fondos
+    //fondos
     'assets/images/bg_1.png',
     'assets/images/bg_2.png',
     'assets/images/bg_3.png',
@@ -82,16 +91,20 @@ class _PaginaBaseState extends State<PaginaBase> {
 
   @override
   Widget build(BuildContext context) {
+    //RENDERIZADO DEL GESTOR // BUILD DE PAGINA BASE
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      extendBody: true,
+      //retorna la estructura básica de diseño de la pagína
+      extendBodyBehindAppBar:
+          true, //permite que el fondo ocupe toda la pantalla (behindappbar) incluso por debajo de la appbar
+      extendBody: true, //por toda la pantalla
 
       appBar: AppBar(
+        //define la barra superior transparente
         title: const Text(
           'HyFeel',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        centerTitle: true,
+        centerTitle: true, //estilo
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -101,27 +114,36 @@ class _PaginaBaseState extends State<PaginaBase> {
 
       // El cuerpo cambia según el índice seleccionado
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
+        //cuerpo que genera una transición suave cuando el contenido cambia de pestaña
+        duration: const Duration(milliseconds: 200), //duración de la transición
         transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(opacity: animation, child: child);
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          ); //fadetransition -> suavidad
         },
         child: Container(
+          //contenedor principal
           key: ValueKey<int>(_indiceActual),
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(_fondos[_indiceActual]),
+              image: AssetImage(
+                _fondos[_indiceActual],
+              ), //pilla la foto elegida segun el indice actual
               fit: BoxFit.cover,
             ),
           ),
-          child: _pantallas[_indiceActual],
+          child:
+              _pantallas[_indiceActual], //renderiza la pantalla escogida por el usuario
         ),
       ),
 
       // La Barra Inferior
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
+          //info general sobre los datos del texto e icono
           indicatorColor: Colors.white.withValues(alpha: 0.2),
           labelTextStyle: const WidgetStatePropertyAll(
             TextStyle(color: Colors.white, fontSize: 12),
@@ -131,6 +153,7 @@ class _PaginaBaseState extends State<PaginaBase> {
           ),
         ),
         child: NavigationBar(
+          //define los iconos y los textos
           height: 70,
           backgroundColor: Colors.transparent,
           selectedIndex: _indiceActual,
@@ -164,14 +187,15 @@ class _PaginaBaseState extends State<PaginaBase> {
   }
 }
 
-// PANTALLA PRINCIPAL (Dashboard / Vista General)
-// Ahora es un StatelessWidget porque no maneja variables de estado internas,
-// solo recibe órdenes y dibuja la pantalla.
+// no maneja variables de estado internas, por eso es statlesswidget, es un mandao
 class PantallaPrincipal extends StatelessWidget {
-  final VoidCallback? onVerMasContenidos;
+  // PANEL DE CONTROl - recibe ordenes y dibuja la pantalla
+  final VoidCallback?
+  onVerMasContenidos; //declaración de punteros, si se les llama ejecuta el codigo del padre (PaginaBase)
   final VoidCallback? onVerMasTests;
 
   const PantallaPrincipal({
+    //config llamadas
     super.key,
     this.onVerMasContenidos,
     this.onVerMasTests,
@@ -179,13 +203,17 @@ class PantallaPrincipal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //construcción general
     return SingleChildScrollView(
+      //si se excede el tamagno de pantalla scroll
       padding: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 90),
       child: Column(
+        //hijos en una transición vertical
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // --- SECCIÓN: BIENVENIDA ---
           const Text(
+            //texto de inicio
             "El futuro esta en tus manos.",
             style: TextStyle(
               fontSize: 24,
@@ -195,9 +223,10 @@ class PantallaPrincipal extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // --- SECCIÓN: CONTENIDOS DIDÁCTICOS ---
+          // --- SECCIÓN: CONTENIDOS DIDÁCTICOS --- llama a funciones de abajo
           _construirCabeceraSeccion("Módulos Teóricos", onVerMasContenidos),
           Row(
+            //fila horizontal
             children: [
               Expanded(
                 child: _construirMiniBloque(
@@ -236,6 +265,7 @@ class PantallaPrincipal extends StatelessWidget {
   // --- WIDGETS AUXILIARES ---
 
   Widget _construirCabeceraSeccion(String titulo, VoidCallback? accion) {
+    //cabecera
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -250,7 +280,7 @@ class PantallaPrincipal extends StatelessWidget {
         TextButton(
           onPressed: accion,
           child: const Text(
-            "Ver más >",
+            "Más contenido...",
             style: TextStyle(color: Color.fromARGB(255, 13, 71, 161)),
           ),
         ),
@@ -259,6 +289,7 @@ class PantallaPrincipal extends StatelessWidget {
   }
 
   Widget _construirMiniBloque(IconData icono, String titulo) {
+    //minibloques de selecciónado
     return Card(
       color: Colors.white.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),

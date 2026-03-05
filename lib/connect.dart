@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 // PANTALLA DE CONEXIÓN (Maneja el estado del enlace con el ESP32)
 class PantallaConexion extends StatefulWidget {
+  //tiene un estado interno que puede cambiar
   const PantallaConexion({super.key});
 
   @override
@@ -10,7 +11,7 @@ class PantallaConexion extends StatefulWidget {
 
 class _PantallaConexionState extends State<PantallaConexion> {
   // --- VARIABLES DE ESTADO ---
-  String estadoTexto = "Sistema Desconectado";
+  String estadoTexto = "Sistema Desconectado"; //inicial
   bool monitorizando = false;
   Color colorEstado = const Color.fromARGB(163, 7, 53, 221);
 
@@ -20,10 +21,11 @@ class _PantallaConexionState extends State<PantallaConexion> {
       monitorizando = !monitorizando;
 
       if (monitorizando) {
-        estadoTexto = "Conectado. Recibiendo datos...";
+        estadoTexto = "Conectado. Recibiendo datos..."; // se pulsa el boton
         colorEstado = Colors.green;
       } else {
-        estadoTexto = "Desconectado. Enlace Detenido";
+        estadoTexto =
+            "Desconectado. Enlace Detenido"; // se pulsa y se desconecta
         colorEstado = Colors.red;
       }
     });
@@ -31,6 +33,7 @@ class _PantallaConexionState extends State<PantallaConexion> {
 
   @override
   Widget build(BuildContext context) {
+    //constructor
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

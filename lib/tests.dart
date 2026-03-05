@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 
 // PANTALLA DE TESTS (StatelessWidget para la vista general)
 class PantallaTests extends StatelessWidget {
+  //por ahora no varia nada en la estructura interna, WIDGET INMUTABLE
   const PantallaTests({super.key});
 
   @override
   Widget build(BuildContext context) {
     // 1. Estructura de Datos: Definimos los niveles de evaluación
     final List<Map<String, dynamic>> testsHidrogeno = [
+      //lista que actua como base de datos local
       {
         'titulo': 'Nivel 1: Fundamentos del H₂',
-        'descripcion': 'Conceptos básicos y propiedades químicas.',
+        'descripcion':
+            'Conceptos básicos y propiedades químicas.', //contiene map con propiedades de cada test
         'icono': Icons.science,
         'color': Colors.teal,
         'preguntas': 10,
@@ -40,6 +43,7 @@ class PantallaTests extends StatelessWidget {
     ];
 
     return SafeArea(
+      //constructor y renderizador
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         child: Column(
@@ -48,7 +52,7 @@ class PantallaTests extends StatelessWidget {
             const SizedBox(height: 10), // Espaciado para la AppBar
             // Título de la sección
             const Text(
-              'Evaluación de Conocimientos',
+              'Evaluación de Conocimientos', //titulo
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -64,21 +68,26 @@ class PantallaTests extends StatelessWidget {
             ),
             const SizedBox(height: 5),
             const Text(
-              'Demuestra lo aprendido en los módulos',
+              'Demuestra lo aprendido en los módulos', //subtitulo
               style: TextStyle(fontSize: 16, color: Colors.white70),
             ),
             const SizedBox(height: 30),
 
             // 2. Lista Vertical de Tests (ListView.builder)
             Expanded(
+              //obliga a la lista de tests a ocupar el espacio vertical restante
               child: ListView.builder(
-                physics: const BouncingScrollPhysics(),
+                physics: const BouncingScrollPhysics(), //scroll
                 padding: const EdgeInsets.only(
                   bottom: 100,
                 ), // Evita solapamiento con NavigationBar
-                itemCount: testsHidrogeno.length,
+                itemCount: testsHidrogeno
+                    .length, //indica el num exacto de constructores
                 itemBuilder: (context, index) {
-                  return _construirModuloTest(context, testsHidrogeno[index]);
+                  return _construirModuloTest(
+                    context,
+                    testsHidrogeno[index],
+                  ); //bucle de construcción
                 },
               ),
             ),
@@ -90,6 +99,7 @@ class PantallaTests extends StatelessWidget {
 
   // 3. Método para construir cada rectángulo de Test
   Widget _construirModuloTest(BuildContext context, Map<String, dynamic> test) {
+    //función para construir el modulo, el cuadradito del test
     return Container(
       margin: const EdgeInsets.only(
         bottom: 15.0,
@@ -97,6 +107,7 @@ class PantallaTests extends StatelessWidget {
       child: InkWell(
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
+            //lo que sale, por ahora, cuando lo abres
             SnackBar(
               content: Text('Iniciando ${test['titulo']}...'),
               duration: const Duration(seconds: 1),
@@ -107,6 +118,7 @@ class PantallaTests extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
+            //estilo
             color: Colors.white.withValues(alpha: 0.85), // Efecto translúcido
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
@@ -118,6 +130,7 @@ class PantallaTests extends StatelessWidget {
             ],
           ),
           child: Row(
+            //dentro del rectangulo elementos
             // Usamos Row para alinear elementos horizontalmente
             children: [
               // Icono circular a la izquierda
@@ -134,6 +147,7 @@ class PantallaTests extends StatelessWidget {
               // Textos centrales (Título y Descripción) expandidos para ocupar el centro
               Expanded(
                 child: Column(
+                  //centro
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
