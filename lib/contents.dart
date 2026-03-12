@@ -161,8 +161,8 @@ class PantallaContenidos extends StatelessWidget {
   }
 
   // 3. Método para construir la tarjeta de cada módulo
+  // 3. Método para construir la tarjeta de cada módulo (ACTUALIZADO AL ESTILO BURBUJA)
   Widget _construirCarpetaModulo(
-    //funcion que se llama para construir cada tarjeta
     BuildContext context,
     Map<String, dynamic> modulo,
   ) {
@@ -170,33 +170,42 @@ class PantallaContenidos extends StatelessWidget {
       onTap: () {
         // Navegamos a la pantalla estilo historia pasando los datos
         Navigator.push(
-          //al pulsar añade una nueva ruta, nueva pantalla de datos
           context,
           MaterialPageRoute(
             builder: (context) => PantallaHistoriaTeoria(datosModulo: modulo),
           ),
         );
       },
-      borderRadius: BorderRadius.circular(25),
+      borderRadius: BorderRadius.circular(
+        30,
+      ), // Radio actualizado para coincidir con los tests
       child: Container(
-        //creacion del contenedor que trae la pantalla
+        // --- ESTILO BURBUJA (GLASSMORPHISM) ---
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(25),
+          color: Colors.white.withValues(alpha: 0.65), // Transparencia base
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: Colors.white.withValues(
+              alpha: 0.9,
+            ), // Reflejo del borde de la burbuja
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: modulo['color'].withValues(
+                alpha: 0.2,
+              ), // Sombra proyectada con el color temático del módulo
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
           ],
         ),
         child: Column(
-          //contenidos dentro de la tarjeta
+          // Contenidos dentro de la tarjeta (se mantiene la estructura vertical para el Grid)
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(15), //color
+              padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
                 color: modulo['color'].withOpacity(0.2),
                 shape: BoxShape.circle,
@@ -205,7 +214,6 @@ class PantallaContenidos extends StatelessWidget {
             ),
             const SizedBox(height: 15),
             Padding(
-              //titulo
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Text(
                 modulo['titulo'],
