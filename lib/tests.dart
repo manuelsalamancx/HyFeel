@@ -480,23 +480,36 @@ final List<ModuloTest> testsHidrogeno = [
 // 2. PANTALLA PRINCIPAL (Lista de Tests) - Estilo Burbuja
 // ============================================================================
 
-class PantallaTests extends StatelessWidget {
+// ============================================================================
+// 2. PANTALLA PRINCIPAL (Lista de Tests) - Estilo Burbuja
+// ============================================================================
+
+class PantallaTests extends StatefulWidget {
   const PantallaTests({super.key});
 
   @override
+  State<PantallaTests> createState() => _PantallaTestsState();
+}
+
+class _PantallaTestsState extends State<PantallaTests> {
+  // Almacenamos los índices de los módulos que ya han sido aprobados
+  final Set<int> _modulosCompletados = {};
+
+  @override
   Widget build(BuildContext context) {
-    // Fondo azulado general para la aplicación
+    // Calculamos el progreso global para la barrita
+    final double progresoGlobal =
+        _modulosCompletados.length / testsHidrogeno.length;
+
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage(
-            'assets/bg_3.png',
-          ), // Reemplaza con el nombre y ruta de tu archivo
+          image: AssetImage('assets/bg_3.png'), // Tu fondo
           fit: BoxFit.cover,
         ),
       ),
       child: Scaffold(
-        backgroundColor: Colors.transparent, // Permite ver el gradiente
+        backgroundColor: Colors.transparent,
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -512,7 +525,7 @@ class PantallaTests extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF01579B), // Azul oscuro para contraste
+                    color: Color(0xFF01579B),
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -520,16 +533,94 @@ class PantallaTests extends StatelessWidget {
                   'Demuestra lo aprendido en los módulos',
                   style: TextStyle(fontSize: 16, color: Colors.black54),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
+
+                // ==========================================================
+                // BARRITA MINIMALISTA DE PROGRESO GLOBAL
+                // ==========================================================
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.65),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.lightBlue.withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Stack(
+                        children: [
+                          Container(
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 800),
+                            curve: Curves.easeOutCubic,
+                            height: 10,
+                            width:
+                                constraints.maxWidth *
+                                progresoGlobal, // Expande según los completados
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF29B6F6), Color(0xFF0288D1)],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.blue.withValues(alpha: 0.4),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                // Texto de ayuda para el progreso
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 10.0),
+                  child: Text(
+                    '${_modulosCompletados.length} de ${testsHidrogeno.length} completados',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ),
+                // ==========================================================
+                const SizedBox(height: 20),
+
                 Expanded(
                   child: ListView.builder(
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.only(bottom: 20),
                     itemCount: testsHidrogeno.length,
                     itemBuilder: (context, index) {
+                      final estaCompletado = _modulosCompletados.contains(
+                        index,
+                      );
                       return _construirModuloTest(
                         context,
                         testsHidrogeno[index],
+                        index,
+                        estaCompletado,
                       );
                     },
                   ),
@@ -542,30 +633,47 @@ class PantallaTests extends StatelessWidget {
     );
   }
 
-  Widget _construirModuloTest(BuildContext context, ModuloTest modulo) {
+  Widget _construirModuloTest(
+    BuildContext context,
+    ModuloTest modulo,
+    int index,
+    bool estaCompletado,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15.0),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          // Esperamos el resultado (true o null) al volver de la pantalla de resultados
+          final bool? aprobado = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => PantallaCuestionario(modulo: modulo),
             ),
           );
+
+          // Si el test se aprobó, actualizamos el estado para sumar un segmento a la barra
+          if (aprobado == true) {
+            setState(() {
+              _modulosCompletados.add(index);
+            });
+          }
         },
-        borderRadius: BorderRadius.circular(
-          30,
-        ), // Bordes más redondeados (burbuja)
+        borderRadius: BorderRadius.circular(30),
         child: Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.65), // Mayor transparencia
+            color: estaCompletado
+                ? Colors.green.withValues(
+                    alpha: 0.1,
+                  ) // Fondo verdoso si está completado
+                : Colors.white.withValues(alpha: 0.65),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: estaCompletado
+                  ? Colors.green.withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.9),
               width: 1.5,
-            ), // Reflejo de burbuja
+            ),
             boxShadow: [
               BoxShadow(
                 color: modulo.color.withValues(alpha: 0.2),
@@ -579,10 +687,17 @@ class PantallaTests extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: modulo.color.withValues(alpha: 0.2),
+                  color: estaCompletado
+                      ? Colors.green
+                      : modulo.color.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(modulo.icono, size: 32, color: modulo.color),
+                // Cambia el icono a un check si está completado
+                child: Icon(
+                  estaCompletado ? Icons.check : modulo.icono,
+                  size: 32,
+                  color: estaCompletado ? Colors.white : modulo.color,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -605,34 +720,8 @@ class PantallaTests extends StatelessWidget {
                         color: Colors.black54,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(
-                          15,
-                        ), // Etiqueta redondeada
-                      ),
-                      child: Text(
-                        '${modulo.preguntas.length} preguntas',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: modulo.color,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
-              ),
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 18,
-                color: Colors.black38,
               ),
             ],
           ),
@@ -641,7 +730,6 @@ class PantallaTests extends StatelessWidget {
     );
   }
 }
-
 // ============================================================================
 // 3. PANTALLA DE CUESTIONARIO
 // ============================================================================
@@ -680,7 +768,7 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
     });
   }
 
-  void _registrarRespuesta(int indiceSeleccionado) {
+  void _registrarRespuesta(int indiceSeleccionado) async {
     _timer?.cancel();
     _respuestasUsuario.add(indiceSeleccionado);
 
@@ -690,7 +778,7 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
       });
       _iniciarTemporizador();
     } else {
-      Navigator.pushReplacement(
+      final bool? resultadoFinal = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => PantallaResultados(
@@ -699,6 +787,9 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
           ),
         ),
       );
+      if (mounted) {
+        Navigator.pop(context, resultadoFinal);
+      }
     }
   }
 
@@ -1011,7 +1102,10 @@ class PantallaResultados extends StatelessWidget {
                       elevation: 3,
                     ),
                     onPressed: () {
-                      Navigator.pop(context); // Vuelve al menú de tests
+                      Navigator.pop(
+                        context,
+                        aprobado,
+                      ); // Vuelve al menú de tests
                     },
                     child: const Text(
                       'Volver al Menú',

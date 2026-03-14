@@ -215,7 +215,18 @@ class _PantallaContenidosState extends State<PantallaContenidos> {
                     },
                   ),
                 ),
-                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 10.0),
+                  child: Text(
+                    '${_modulosCompletados.length} de ${modulosHidrogeno.length} completados',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
 
                 // 2. Cuadrícula dinámica
                 Expanded(
