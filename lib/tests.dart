@@ -402,6 +402,78 @@ final List<ModuloTest> testsHidrogeno = [
       ),
     ],
   ),
+  ModuloTest(
+    titulo: 'Nivel 5: Aplicaciones y Casos de Uso',
+    descripcion: 'Uso industrial, movilidad y transición energética.',
+    icono: Icons.electric_car, // Requiere el icono de coche eléctrico o similar
+    color: Colors.orange,
+    preguntas: [
+      Pregunta(
+        texto:
+            '¿En qué sector industrial tiene mayor potencial el hidrógeno verde para descarbonizar procesos pesados?',
+        opciones: [
+          'Siderurgia (acero) y química',
+          'Industria textil',
+          'Procesamiento de alimentos',
+          'Ensamblaje electrónico',
+        ],
+        indiceCorrecto: 0,
+        explicacion:
+            'El H₂ se utiliza para la reducción directa del mineral de hierro (DRI) y la producción de amoníaco verde, sustituyendo a los combustibles fósiles en procesos de muy alta temperatura.',
+      ),
+      Pregunta(
+        texto:
+            '¿Qué significa el concepto "Power-to-Gas" (P2G) en el contexto de la red eléctrica?',
+        opciones: [
+          'Generar electricidad quemando gas natural',
+          'Convertir excedentes de electricidad renovable en hidrógeno gaseoso',
+          'Comprimir aire para mover turbinas',
+          'Utilizar gas para refrigerar paneles solares',
+        ],
+        indiceCorrecto: 1,
+        explicacion:
+            'P2G permite almacenar el exceso de energía de fuentes intermitentes (eólica/solar) transformándola en hidrógeno mediante electrólisis para su uso posterior.',
+      ),
+      Pregunta(
+        texto:
+            '¿Qué ventaja principal tiene un vehículo de pila de combustible (FCEV) frente a uno eléctrico de batería (BEV)?',
+        opciones: [
+          'Mayor eficiencia energética global',
+          'Menor coste de adquisición',
+          'Menor tiempo de repostaje y mayor autonomía en carga pesada',
+          'Cero desgaste de neumáticos',
+        ],
+        indiceCorrecto: 2,
+        explicacion:
+            'Repostar hidrógeno a 700 bar toma entre 3 y 5 minutos, similar a un vehículo de combustión, lo que lo hace ideal para transporte pesado (camiones, autobuses).',
+      ),
+      Pregunta(
+        texto: '¿Qué es el "blending" en la infraestructura gasista?',
+        opciones: [
+          'Filtrar impurezas del hidrógeno',
+          'Mezclar e inyectar un porcentaje de hidrógeno en la red de gas natural existente',
+          'Licuar gases mixtos a baja temperatura',
+          'La separación de isótopos de hidrógeno',
+        ],
+        indiceCorrecto: 1,
+        explicacion:
+            'El blending permite aprovechar los gasoductos actuales inyectando hasta un 15-20% de H₂ mezclado con gas natural para reducir las emisiones sin cambiar la infraestructura radicalmente.',
+      ),
+      Pregunta(
+        texto:
+            'En la integración de tu propio electrolizador (monitorizado con ESP32), ¿qué tipo de arquitectura representa este sistema?',
+        opciones: [
+          'Sistema aislado de lazo abierto',
+          'Internet de las Cosas (IoT) y gemelo digital básico',
+          'Red neuronal profunda',
+          'Computación cuántica',
+        ],
+        indiceCorrecto: 1,
+        explicacion:
+            'Al adquirir datos del electrolizador y enviarlos mediante JSON y Bluetooth a tu aplicación móvil, estás implementando una arquitectura de telemetría IoT, sentando las bases de un gemelo digital.',
+      ),
+    ],
+  ),
 ];
 
 // ============================================================================
@@ -436,9 +508,9 @@ class PantallaTests extends StatelessWidget {
               children: [
                 const SizedBox(height: 10),
                 const Text(
-                  'Evaluación de Conocimientos',
+                  'Evaluación',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 25,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF01579B), // Azul oscuro para contraste
                   ),
