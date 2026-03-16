@@ -1,34 +1,33 @@
-import 'package:flutter/material.dart'; // // importamos el conjunto de widgets visuales de google
-import 'contents.dart';
+import 'package:flutter/material.dart';
+import 'contents.dart'; // Importamos la UI de contenidos y la base de datos 'modulosHidrogenoGlobal'
 import 'tests.dart';
-import 'home.dart';
 import 'connect.dart';
 
+// =========================================================================
 // PUNTO DE ENTRADA PRINCIPAL
+// =========================================================================
 void main() {
   runApp(const MiTFGApp());
 }
 
-// CONFIGURACION GENERAL PARAMETROS DE LA APP
+// =========================================================================
+// CONFIGURACIÓN GENERAL PARAMETROS DE LA APP
+// =========================================================================
 class MiTFGApp extends StatelessWidget {
-  //statelesswidget define la clase y no mutara por si misma
-  const MiTFGApp({
-    super.key,
-  }); //constructor de la clase -> usara keys para la identificación del widget en el arbol
+  const MiTFGApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'HyFeel', // NOMBRE DE LA APLICACIÓN
+      title: 'HyFeel',
       debugShowCheckedModeBanner: false,
-      home: const PantallaHome(), // deberia de ser home: const PaginaBase()
+      home: const PaginaBase(),
       theme: ThemeData(
-        // Tema principal de la app -> COLOR DEL TEMA
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromRGBO(119, 235, 243, 1),
         ),
-        useMaterial3: true, //estilo UI
-        fontFamily: 'MiFuenteTFG', //FUENTE
+        useMaterial3: true,
+        fontFamily: 'MiFuenteTFG',
         textTheme: const TextTheme(
           displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
           bodyLarge: TextStyle(fontSize: 16),
@@ -38,11 +37,11 @@ class MiTFGApp extends StatelessWidget {
   }
 }
 
-// ESTA ES LA CLASE QUE CONTROLA LA NAVEGACIÓN ---> Padre -> EL INDICE NOS DICE A QUE PESTAÑA IRNOS, EN ESTE CASO LA CERO QUE ES LA PRINCIPAL
+// =========================================================================
+// GESTOR DE NAVEGACIÓN Y ESTADO CENTRAL (LIFTING STATE UP)
+// =========================================================================
 class PaginaBase extends StatefulWidget {
-  //statefulwidget - puede cambiar
   final int indiceInicial;
-
   const PaginaBase({super.key, this.indiceInicial = 0});
 
   @override
@@ -50,7 +49,10 @@ class PaginaBase extends StatefulWidget {
 }
 
 class _PaginaBaseState extends State<PaginaBase> {
-  late int _indiceActual = 0; // Puntero que controla qué pestaña está activa
+  late int _indiceActual = 0;
+
+  // ESTADO GLOBAL: La única fuente de la verdad para el progreso del usuario
+  final Set<int> _modulosCompletados = {};
 
   @override
   void initState() {
@@ -58,31 +60,37 @@ class _PaginaBaseState extends State<PaginaBase> {
     _indiceActual = widget.indiceInicial;
   }
 
-  // --- FUNCIÓN PARA CAMBIAR DE PESTAÑA DESDE OTROS WIDGETS ---
   void _cambiarPestana(int indice) {
-    //notifica al framework que el estado ha cambiado y se guarda en indice.
     setState(() {
-      _indiceActual = indice; //para luego ser pasado a indice
+      _indiceActual = indice;
     });
   }
 
-  // Convertimos _pantallas en un 'getter' (get) para poder pasarle la función _cambiarPestana a la PantallaPrincipal
+  void _marcarModuloCompletado(int index) {
+    setState(() {
+      _modulosCompletados.add(index);
+    });
+  }
+
   List<Widget> get _pantallas => [
-    //el getter nos permite cambiar las pestagnas dentro de la pantalla
+    // Pestaña 0: Home
     PantallaPrincipal(
-      //botones de ver mas y redirigir a otras pestañas
-      onVerMasContenidos: () =>
-          _cambiarPestana(1), // Manda al índice 1 (Contenidos)
-      onVerMasTests: () => _cambiarPestana(2), // Manda al índice 2 (Tests)
+      modulosCompletados: _modulosCompletados,
+      onModuloCompletado: _marcarModuloCompletado,
+      onIrAContenidos: () => _cambiarPestana(1), // Inyección de redirección
+      onVerMasTests: () => _cambiarPestana(2),
     ),
-    const PantallaContenidos(),
-    const PantallaTests(),
-    const PantallaConexion(),
+    // Pestaña 1: Contenidos Completos
+    PantallaContenidos(
+      modulosCompletados: _modulosCompletados,
+      onModuloCompletado: _marcarModuloCompletado,
+    ),
+    // Pestañas 2 y 3
+    const PantallaTests(), // Placeholder
+    const PantallaConexion(), // Placeholder
   ];
 
   final List<String> _fondos = [
-    //diccionario fondos
-    //fondos
     'assets/images/bg_1.png',
     'assets/images/bg_2.png',
     'assets/images/bg_3.png',
@@ -91,72 +99,51 @@ class _PaginaBaseState extends State<PaginaBase> {
 
   @override
   Widget build(BuildContext context) {
-    //RENDERIZADO DEL GESTOR // BUILD DE PAGINA BASE
     return Scaffold(
-      //retorna la estructura básica de diseño de la pagína
-      extendBodyBehindAppBar:
-          true, //permite que el fondo ocupe toda la pantalla (behindappbar) incluso por debajo de la appbar
-      extendBody: true, //por toda la pantalla
-
+      extendBodyBehindAppBar: true,
+      extendBody: true,
       appBar: AppBar(
-        //define la barra superior transparente
         title: const Text(
           'HyFeel',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        centerTitle: true, //estilo
+        centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         foregroundColor: const Color.fromARGB(255, 13, 71, 161),
       ),
-
-      // El cuerpo cambia según el índice seleccionado
       body: AnimatedSwitcher(
-        //cuerpo que genera una transición suave cuando el contenido cambia de pestaña
-        duration: const Duration(milliseconds: 200), //duración de la transición
+        duration: const Duration(milliseconds: 200),
         transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          ); //fadetransition -> suavidad
+          return FadeTransition(opacity: animation, child: child);
         },
         child: Container(
-          //contenedor principal
           key: ValueKey<int>(_indiceActual),
           width: double.infinity,
           height: double.infinity,
           decoration: BoxDecoration(
+            color: Colors.blueGrey,
             image: DecorationImage(
-              image: AssetImage(
-                _fondos[_indiceActual],
-              ), //pilla la foto elegida segun el indice actual
+              image: AssetImage(_fondos[_indiceActual]),
               fit: BoxFit.cover,
             ),
           ),
-          child:
-              _pantallas[_indiceActual], //renderiza la pantalla escogida por el usuario
+          child: _pantallas[_indiceActual],
         ),
       ),
-
       bottomNavigationBar: Container(
-        // Añadimos un poco de margen superior en el contenedor para que el degradado empiece antes del texto
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors
-                  .transparent, // Arriba: 100% transparente (elimina el corte severo)
-              Colors.black.withValues(
-                alpha: 0.4,
-              ), // Medio: empieza a oscurecer para leer los iconos
-              Colors.black.withValues(
-                alpha: 0.8,
-              ), // Abajo: más oscuro para el contraste
+              Colors.transparent,
+              Colors.black.withValues(alpha: 0.4),
+              Colors.black.withValues(alpha: 0.8),
             ],
-            stops: const [0.0, 0.4, 1.0], // Puntos de transición del degradado
+            stops: const [0.0, 0.4, 1.0],
           ),
         ),
         child: NavigationBarTheme(
@@ -174,11 +161,9 @@ class _PaginaBaseState extends State<PaginaBase> {
             ),
           ),
           child: NavigationBar(
-            height: 80, // Ligeramente más alta para que el degradado respire
-            backgroundColor: Colors
-                .transparent, // CRÍTICO: Debe ser transparente para ver el degradado
-            elevation:
-                0, // CRÍTICO: Elimina las sombras por defecto de Material 3
+            height: 80,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
             selectedIndex: _indiceActual,
             onDestinationSelected: _cambiarPestana,
             destinations: const [
@@ -210,85 +195,115 @@ class _PaginaBaseState extends State<PaginaBase> {
   }
 }
 
-// no maneja variables de estado internas, por eso es statlesswidget, es un mandao
-class PantallaPrincipal extends StatelessWidget {
-  // PANEL DE CONTROl - recibe ordenes y dibuja la pantalla
-  final VoidCallback?
-  onVerMasContenidos; //declaración de punteros, si se les llama ejecuta el codigo del padre (PaginaBase)
+// =========================================================================
+// PANTALLA PRINCIPAL (HOME)
+// =========================================================================
+class PantallaPrincipal extends StatefulWidget {
+  final Set<int> modulosCompletados;
+  final Function(int) onModuloCompletado;
+  final VoidCallback onIrAContenidos;
   final VoidCallback? onVerMasTests;
 
   const PantallaPrincipal({
-    //config llamadas
     super.key,
-    this.onVerMasContenidos,
+    required this.modulosCompletados,
+    required this.onModuloCompletado,
+    required this.onIrAContenidos,
     this.onVerMasTests,
   });
 
   @override
+  State<PantallaPrincipal> createState() => _PantallaPrincipalState();
+}
+
+class _PantallaPrincipalState extends State<PantallaPrincipal> {
+  // Estado local exclusivo para los tests (hasta que los centralice también en un futuro)
+  final Set<int> _testsCompletados = {};
+
+  final List<Map<String, dynamic>> _modulosTests = [
+    {'titulo': 'Test Básico H₂', 'icono': Icons.quiz, 'color': Colors.orange},
+    {'titulo': 'Eficiencia', 'icono': Icons.speed, 'color': Colors.purple},
+  ];
+
+  @override
   Widget build(BuildContext context) {
-    //construcción general
+    // CÁLCULO GEOMÉTRICO: Ancho de pantalla menos los márgenes laterales (32px).
+    // Dividimos entre 4.2 para mostrar 4 burbujas enteras y un 20% de la quinta para invitar al scroll.
+    final double anchoTotalDisponible = MediaQuery.of(context).size.width - 32;
+    final double anchoBurbuja = anchoTotalDisponible / 4.2;
+
     return SingleChildScrollView(
-      //si se excede el tamagno de pantalla scroll
       padding: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 90),
+      physics: const BouncingScrollPhysics(),
       child: Column(
-        //hijos en una transición vertical
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- SECCIÓN: BIENVENIDA ---
           const Text(
-            //texto de inicio
-            "El futuro esta en tus manos.",
+            "El futuro está en tus manos.",
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Color.fromARGB(255, 13, 71, 161),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 25),
+          _construirCabeceraSeccion("Módulos Teóricos", widget.onIrAContenidos),
+          const SizedBox(height: 10),
 
-          // --- SECCIÓN: CONTENIDOS DIDÁCTICOS --- llama a funciones de abajo
-          _construirCabeceraSeccion("Módulos Teóricos", onVerMasContenidos),
-          Row(
-            //fila horizontal
-            children: [
-              Expanded(
-                child: _construirMiniBloque(
-                  Icons.science,
-                  "Pilas de Combustible",
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _construirMiniBloque(
-                  Icons.water_drop,
-                  "Electrólisis PEM",
-                ),
-              ),
-            ],
+          // CARRUSEL TEORÍA (Conectado a la BD Global de contents.dart)
+          SizedBox(
+            height: 160,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: modulosHidrogenoGlobal
+                  .length, // Usamos la lista de contents.dart
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12.0, bottom: 15.0),
+                  child: SizedBox(
+                    width: anchoBurbuja,
+                    child: _construirBurbujaTeoria(
+                      modulosHidrogenoGlobal[index],
+                      index,
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 35),
+          _construirCabeceraSeccion(
+            "Evaluación Continua",
+            widget.onVerMasTests,
+          ),
+          const SizedBox(height: 10),
 
-          // --- SECCIÓN: TESTS Y EVALUACIÓN ---
-          _construirCabeceraSeccion("Evaluación Continua", onVerMasTests),
-          Row(
-            children: [
-              Expanded(
-                child: _construirMiniBloque(Icons.quiz, "Test Básico H2"),
-              ),
-              const SizedBox(width: 10),
-              Expanded(child: _construirMiniBloque(Icons.speed, "Eficiencia")),
-            ],
+          // CARRUSEL TESTS
+          SizedBox(
+            height: 160,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              itemCount: _modulosTests.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12.0, bottom: 15.0),
+                  child: SizedBox(
+                    width: anchoBurbuja,
+                    child: _construirBurbujaTest(_modulosTests[index], index),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  // --- WIDGETS AUXILIARES ---
-
   Widget _construirCabeceraSeccion(String titulo, VoidCallback? accion) {
-    //cabecera
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -303,31 +318,130 @@ class PantallaPrincipal extends StatelessWidget {
         TextButton(
           onPressed: accion,
           child: const Text(
-            "Más contenido...",
-            style: TextStyle(color: Color.fromARGB(255, 13, 71, 161)),
+            "Ver todo >",
+            style: TextStyle(
+              color: Color.fromARGB(255, 13, 71, 161),
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _construirMiniBloque(IconData icono, String titulo) {
-    //minibloques de selecciónado
-    return Card(
-      color: Colors.white.withValues(alpha: 0.1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+  Widget _construirBurbujaTeoria(Map<String, dynamic> modulo, int index) {
+    final bool estaCompletado = widget.modulosCompletados.contains(index);
+
+    return _plantillaBurbujaUI(
+      modulo: modulo,
+      estaCompletado: estaCompletado,
+      onTap: () async {
+        final resultado = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PantallaHistoriaTeoria(datosModulo: modulo),
+          ),
+        );
+        if (resultado == true) {
+          widget.onModuloCompletado(index); // Actualiza estado global
+          widget.onIrAContenidos(); // Fuerzo transición a pestaña de contenidos
+        }
+      },
+    );
+  }
+
+  Widget _construirBurbujaTest(Map<String, dynamic> modulo, int index) {
+    final bool estaCompletado = _testsCompletados.contains(index);
+
+    return _plantillaBurbujaUI(
+      modulo: modulo,
+      estaCompletado: estaCompletado,
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Abriendo evaluación: ${modulo['titulo']}")),
+        );
+        setState(() {
+          _testsCompletados.add(index);
+        });
+      },
+    );
+  }
+
+  // Refactorización de la UI de la burbuja para evitar duplicar código entre Test y Teoría
+  Widget _plantillaBurbujaUI({
+    required Map<String, dynamic> modulo,
+    required bool estaCompletado,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: estaCompletado
+              ? Colors.white.withValues(alpha: 0.85)
+              : Colors.white.withValues(alpha: 0.65),
+          borderRadius: BorderRadius.circular(
+            20,
+          ), // Reducido ligeramente para acomodar 4 elementos
+          border: Border.all(
+            color: estaCompletado
+                ? Colors.green.withValues(alpha: 0.8)
+                : Colors.white.withValues(alpha: 0.9),
+            width: estaCompletado ? 2.5 : 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: modulo['color'].withValues(alpha: 0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icono, size: 40, color: Colors.white),
+            if (estaCompletado)
+              const Align(
+                alignment: Alignment.topRight,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 8.0),
+                  child: Icon(
+                    Icons.check_circle,
+                    color: Colors.green,
+                    size: 16,
+                  ),
+                ),
+              ),
+            Container(
+              padding: const EdgeInsets.all(
+                10,
+              ), // Padding reducido para optimizar espacio
+              decoration: BoxDecoration(
+                color: modulo['color'].withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                modulo['icono'],
+                size: 28,
+                color: modulo['color'],
+              ), // Icono más compacto
+            ),
             const SizedBox(height: 10),
-            Text(
-              titulo,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: Text(
+                modulo['titulo'],
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12, // Fuente reducida para que encaje bien
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                  height: 1.1,
+                ),
+              ),
             ),
           ],
         ),
