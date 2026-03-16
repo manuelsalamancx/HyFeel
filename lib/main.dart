@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart'; // importamos el conjunto de widgets visuales de google
+import 'package:flutter/material.dart'; // // importamos el conjunto de widgets visuales de google
 import 'contents.dart';
 import 'tests.dart';
 import 'home.dart';
@@ -140,47 +140,70 @@ class _PaginaBaseState extends State<PaginaBase> {
         ),
       ),
 
-      // La Barra Inferior
-      bottomNavigationBar: NavigationBarTheme(
-        data: NavigationBarThemeData(
-          //info general sobre los datos del texto e icono
-          indicatorColor: Colors.white.withValues(alpha: 0.2),
-          labelTextStyle: const WidgetStatePropertyAll(
-            TextStyle(color: Colors.white, fontSize: 12),
-          ),
-          iconTheme: const WidgetStatePropertyAll(
-            IconThemeData(color: Colors.white70),
+      bottomNavigationBar: Container(
+        // Añadimos un poco de margen superior en el contenedor para que el degradado empiece antes del texto
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors
+                  .transparent, // Arriba: 100% transparente (elimina el corte severo)
+              Colors.black.withValues(
+                alpha: 0.4,
+              ), // Medio: empieza a oscurecer para leer los iconos
+              Colors.black.withValues(
+                alpha: 0.8,
+              ), // Abajo: más oscuro para el contraste
+            ],
+            stops: const [0.0, 0.4, 1.0], // Puntos de transición del degradado
           ),
         ),
-        child: NavigationBar(
-          //define los iconos y los textos
-          height: 70,
-          backgroundColor: Colors.transparent,
-          selectedIndex: _indiceActual,
-          onDestinationSelected:
-              _cambiarPestana, // Usamos la función refactorizada
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.touch_app_outlined),
-              selectedIcon: Icon(Icons.touch_app),
-              label: 'Home',
+        child: NavigationBarTheme(
+          data: NavigationBarThemeData(
+            indicatorColor: Colors.white.withValues(alpha: 0.2),
+            labelTextStyle: const WidgetStatePropertyAll(
+              TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            NavigationDestination(
-              icon: Icon(Icons.library_books_outlined),
-              selectedIcon: Icon(Icons.library_books),
-              label: 'Contenidos',
+            iconTheme: const WidgetStatePropertyAll(
+              IconThemeData(color: Colors.white70),
             ),
-            NavigationDestination(
-              icon: Icon(Icons.quiz_outlined),
-              selectedIcon: Icon(Icons.quiz),
-              label: 'Tests',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.settings_input_antenna_outlined),
-              selectedIcon: Icon(Icons.settings_input_antenna),
-              label: 'Monitor',
-            ),
-          ],
+          ),
+          child: NavigationBar(
+            height: 80, // Ligeramente más alta para que el degradado respire
+            backgroundColor: Colors
+                .transparent, // CRÍTICO: Debe ser transparente para ver el degradado
+            elevation:
+                0, // CRÍTICO: Elimina las sombras por defecto de Material 3
+            selectedIndex: _indiceActual,
+            onDestinationSelected: _cambiarPestana,
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.touch_app_outlined),
+                selectedIcon: Icon(Icons.touch_app),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.library_books_outlined),
+                selectedIcon: Icon(Icons.library_books),
+                label: 'Contenidos',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.quiz_outlined),
+                selectedIcon: Icon(Icons.quiz),
+                label: 'Tests',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.settings_input_antenna_outlined),
+                selectedIcon: Icon(Icons.settings_input_antenna),
+                label: 'Monitor',
+              ),
+            ],
+          ),
         ),
       ),
     );
