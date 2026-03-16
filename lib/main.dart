@@ -92,7 +92,7 @@ class _PaginaBaseState extends State<PaginaBase> {
       testsCompletados: _testsCompletados,
       onTestCompletado: _marcarTestCompletado,
     ),
-    const PantallaConexion(), // ESP32 Monitor
+    const PantallaConexion(),
   ];
 
   final List<String> _fondos = [
@@ -130,8 +130,8 @@ class _PaginaBaseState extends State<PaginaBase> {
           height: double.infinity,
           decoration: BoxDecoration(
             color: Colors.blueGrey,
-            // Fallback por si la imagen local falla
             image: DecorationImage(
+              // Si no tiene estas imágenes, se quedará de color sólido blueGrey
               image: AssetImage(_fondos[_indiceActual]),
               fit: BoxFit.cover,
             ),
@@ -202,7 +202,7 @@ class _PaginaBaseState extends State<PaginaBase> {
 }
 
 // =========================================================================
-// PANTALLA PRINCIPAL (HOME) - MÓDULOS GRANDES CON ILUSTRACIÓN
+// PANTALLA PRINCIPAL (HOME)
 // =========================================================================
 class PantallaPrincipal extends StatelessWidget {
   final Set<int> modulosCompletados;
@@ -223,26 +223,11 @@ class PantallaPrincipal extends StatelessWidget {
     required this.onIrATests,
   });
 
-  // URLs de demostración para que la App luzca increíble hasta que tenga sus ilustraciones
-  final List<String> imagenesTeoriaDemo = const [
-    'assets/home_images/electrolisis_home.png', // Tecnología/Agua
-    'https://images.unsplash.com/photo-1509391366360-12009a30f14b?q=80&w=600&auto=format&fit=crop', // Energía
-    'https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=600&auto=format&fit=crop', // Almacenamiento/Futuro
-    'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?q=80&w=600&auto=format&fit=crop', // Aplicaciones
-  ];
-
-  final List<String> imagenesTestsDemo = const [
-    'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=600&auto=format&fit=crop', // Ciencia 1
-    'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?q=80&w=600&auto=format&fit=crop', // Laboratorio
-    'https://images.unsplash.com/photo-1483808161634-29aa1b1151c0?q=80&w=600&auto=format&fit=crop', // Energía
-    'https://images.unsplash.com/photo-1614729939124-032f0b56c95b?q=80&w=600&auto=format&fit=crop', // Almacenamiento
-  ];
-
   @override
   Widget build(BuildContext context) {
-    // Dimensiones para tarjetas grandes y majestuosas
-    const double altoCarrusel = 260.0;
-    const double anchoBurbuja = 220.0;
+    const double altoCarrusel = 280.0;
+    final double anchoTotalDisponible = MediaQuery.of(context).size.width - 32;
+    final double anchoBurbuja = anchoTotalDisponible / 1.5;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 90),
@@ -271,13 +256,13 @@ class PantallaPrincipal extends StatelessWidget {
           ),
           const SizedBox(height: 15),
 
-          // CARRUSEL TEORÍA
+          // CARRUSEL TEORÍA (Lee directamente de modulosHidrogenoGlobal)
           SizedBox(
             height: altoCarrusel,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              itemCount: 5, // 4 Módulos + 1 Botón Ver más
+              itemCount: 5,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 18.0, bottom: 15.0),
@@ -288,8 +273,6 @@ class PantallaPrincipal extends StatelessWidget {
                             context,
                             modulosHidrogenoGlobal[index],
                             index,
-                            imagenesTeoriaDemo[index %
-                                imagenesTeoriaDemo.length],
                           )
                         : _construirBurbujaVerMas(onIrAContenidos, Colors.blue),
                   ),
@@ -311,7 +294,7 @@ class PantallaPrincipal extends StatelessWidget {
           ),
           const SizedBox(height: 15),
 
-          // CARRUSEL TESTS
+          // CARRUSEL TESTS (Lee directamente de testsHidrogeno)
           SizedBox(
             height: altoCarrusel,
             child: ListView.builder(
@@ -330,7 +313,6 @@ class PantallaPrincipal extends StatelessWidget {
                             context,
                             testsHidrogeno[index],
                             index,
-                            imagenesTestsDemo[index % imagenesTestsDemo.length],
                           )
                         : _construirBurbujaVerMas(
                             onIrATests,
@@ -350,9 +332,11 @@ class PantallaPrincipal extends StatelessWidget {
     BuildContext context,
     Map<String, dynamic> modulo,
     int index,
-    String urlImagen,
   ) {
     final bool estaCompletado = modulosCompletados.contains(index);
+
+    // Extrae la imagen del diccionario (si no existe, usa string vacío)
+    final String urlImagen = modulo['imagen'] ?? '';
 
     return _plantillaBurbujaUI(
       titulo: modulo['titulo'],
@@ -379,9 +363,11 @@ class PantallaPrincipal extends StatelessWidget {
     BuildContext context,
     ModuloTest modulo,
     int index,
-    String urlImagen,
   ) {
     final bool estaCompletado = testsCompletados.contains(index);
+
+    // Extrae la imagen de la clase (asegúrese de haber añadido la variable en tests.dart)
+    final String urlImagen = modulo.imagen;
 
     return _plantillaBurbujaUI(
       titulo: modulo.titulo,
@@ -404,7 +390,6 @@ class PantallaPrincipal extends StatelessWidget {
     );
   }
 
-  // BURBUJA "VER MÁS..." ESTILIZADA
   Widget _construirBurbujaVerMas(VoidCallback onTap, Color colorBase) {
     return InkWell(
       onTap: onTap,
@@ -460,7 +445,7 @@ class PantallaPrincipal extends StatelessWidget {
   }
 
   // =========================================================================
-  // PLANTILLA MAESTRA: ILUSTRACIÓN DE FONDO Y TEXTO INFERIOR
+  // PLANTILLA MAESTRA: MANEJO DINÁMICO DE IMÁGENES Y COLORES
   // =========================================================================
   Widget _plantillaBurbujaUI({
     required String titulo,
@@ -475,6 +460,8 @@ class PantallaPrincipal extends StatelessWidget {
       borderRadius: BorderRadius.circular(30),
       child: Container(
         decoration: BoxDecoration(
+          // FALLBACK: Si no hay imagen, usa el color del módulo
+          color: urlImagen.isEmpty ? color.withValues(alpha: 0.8) : null,
           borderRadius: BorderRadius.circular(30),
           border: estaCompletado
               ? Border.all(color: Colors.greenAccent, width: 3)
@@ -488,22 +475,24 @@ class PantallaPrincipal extends StatelessWidget {
               offset: const Offset(0, 8),
             ),
           ],
-          // --- AQUÍ SE CARGA LA IMAGEN DE FONDO ---
-          // REEMPLAZAR POR SU IMAGEN ASSET EN EL FUTURO:
-          // image: DecorationImage(image: AssetImage('assets/su_imagen.png'), fit: BoxFit.cover),
-          image: DecorationImage(
-            image: NetworkImage(urlImagen), // Placeholder de internet
-            fit: BoxFit.cover,
-            // Oscurecemos ligeramente la imagen para que resalte el texto
-            colorFilter: ColorFilter.mode(
-              Colors.black.withValues(alpha: 0.2),
-              BlendMode.darken,
-            ),
-          ),
+          // CARGA DE IMAGEN: Si el string tiene texto, carga la imagen
+          image: urlImagen.isNotEmpty
+              ? DecorationImage(
+                  // Permite URLs web o Assets locales según empiece el texto
+                  image: urlImagen.startsWith('http')
+                      ? NetworkImage(urlImagen) as ImageProvider
+                      : AssetImage(urlImagen),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withValues(alpha: 0.3), // Oscurece la imagen
+                    BlendMode.darken,
+                  ),
+                )
+              : null,
         ),
         child: Stack(
           children: [
-            // 1. DEGRADADO OSCURO EN LA BASE PARA LEER EL TEXTO
+            // DEGRADADO OSCURO INFERIOR PARA TEXTO
             Positioned(
               bottom: 0,
               left: 0,
@@ -527,7 +516,7 @@ class PantallaPrincipal extends StatelessWidget {
               ),
             ),
 
-            // 2. CONTENIDO SUPERIOR (Icono y Checkmark)
+            // ICONO SUPERIOR
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: Row(
@@ -565,7 +554,7 @@ class PantallaPrincipal extends StatelessWidget {
               ),
             ),
 
-            // 3. TEXTO EN LA PARTE INFERIOR
+            // TEXTO INFERIOR
             Align(
               alignment: Alignment.bottomLeft,
               child: Padding(
@@ -575,7 +564,7 @@ class PantallaPrincipal extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 22, // Título grande
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     height: 1.1,

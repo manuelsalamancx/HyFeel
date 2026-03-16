@@ -23,6 +23,7 @@ class ModuloTest {
   final String titulo;
   final String descripcion;
   final IconData icono;
+  final String imagen; // meter cuando haya imagenes para los tests
   final Color color;
   final List<Pregunta> preguntas;
 
@@ -31,6 +32,7 @@ class ModuloTest {
     required this.descripcion,
     required this.icono,
     required this.color,
+    required this.imagen,
     required this.preguntas,
   });
 }
@@ -43,6 +45,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Conceptos básicos y propiedades químicas.',
     icono: Icons.science,
     color: Colors.teal,
+    imagen: ' ',
     preguntas: [
       Pregunta(
         texto: '¿Cuál es el número atómico del hidrógeno?',
@@ -127,6 +130,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Métodos de obtención y funcionamiento del electrolizador.',
     icono: Icons.water_drop,
     color: Colors.blueAccent,
+    imagen: ' ',
     preguntas: [
       Pregunta(
         texto:
@@ -214,6 +218,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Termodinámica y generación eléctrica inversa.',
     icono: Icons.battery_charging_full,
     color: Colors.green,
+    imagen: ' ',
     preguntas: [
       Pregunta(
         texto:
@@ -304,6 +309,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Normativa, compresión y riesgos operativos.',
     icono: Icons.shield,
     color: Colors.redAccent,
+    imagen: ' ',
     preguntas: [
       Pregunta(
         texto:
@@ -393,6 +399,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Uso industrial, movilidad y transición energética.',
     icono: Icons.electric_car,
     color: Colors.orange,
+    imagen: ' ',
     preguntas: [
       Pregunta(
         texto:

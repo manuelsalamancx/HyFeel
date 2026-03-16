@@ -8,6 +8,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Electrólisis',
     'icono': Icons.water_drop,
     'color': Colors.blueAccent,
+    'imagen': 'assets/home_images/electrolisis_home.png',
     'diapositivas': [
       'La electrólisis es el proceso electroquímico mediante el cual se utiliza energía eléctrica para dividir la molécula de agua (H₂O) en sus gases constituyentes: Hidrógeno (H₂) y Oxígeno (O₂).',
       'El proceso global se rige por la siguiente ecuación termodinámica:\n\n2H₂O(l) + Energía Eléctrica → 2H₂(g) + O₂(g)',
@@ -19,6 +20,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Pila de Combustible',
     'icono': Icons.battery_charging_full,
     'color': Colors.green,
+    'imagen': 'assets/home_images/electrolisis_home.png',
     'diapositivas': [
       'Una pila de combustible es un dispositivo electroquímico que realiza el proceso inverso a la electrólisis: convierte la energía química del hidrógeno directamente en energía eléctrica limpia.',
       'A diferencia de una batería convencional, no se agota ni necesita recarga. Funciona de manera continua mientras se le suministre combustible (H₂) en el ánodo y un oxidante (O₂ del aire) en el cátodo.',
@@ -29,6 +31,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Almacenamiento',
     'icono': Icons.storage,
     'color': Colors.orange,
+    'imagen': 'assets/home_images/electrolisis_home.png',
     'diapositivas': [
       'El hidrógeno es el elemento más ligero y menos denso del universo. Almacenarlo de forma compacta es uno de los mayores retos de la ingeniería actual.',
       'Método 1: Compresión Gaseosa.\nSe almacena a altas presiones, típicamente a 350 o 700 bares, utilizando tanques reforzados con fibra de carbono (Tipo IV).',
@@ -40,6 +43,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Aplicaciones',
     'icono': Icons.rocket_launch,
     'color': Colors.purple,
+    'imagen': 'assets/home_images/electrolisis_home.png',
     'diapositivas': [
       'Movilidad Pesada:\nEl hidrógeno es ideal para camiones, trenes y barcos, donde las baterías de litio son demasiado pesadas o tardan mucho en recargarse.',
       'Industria Intensiva:\nSustitución del gas natural en procesos que requieren altas temperaturas (acero, cemento) o como materia prima química (fertilizantes).',
@@ -49,6 +53,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Propiedades del H₂',
     'icono': Icons.science,
     'color': Colors.teal,
+    'imagen': 'assets/home_images/electrolisis_home.png',
     'diapositivas': [
       'Propiedades Físicas:\nGas incoloro, inodoro, insípido y altamente inflamable. Su densidad energética por masa es excelente (120 MJ/kg), casi el triple que la gasolina.',
     ],
@@ -66,6 +71,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Seguridad',
     'icono': Icons.security,
     'color': Colors.redAccent,
+    'imagen': 'assets/home_images/electrolisis_home.png',
     'diapositivas': [
       'Al ser tan ligero, en caso de fuga el hidrógeno se disipa rápidamente hacia la atmósfera, reduciendo el riesgo de explosión a nivel del suelo comparado con el GLP o la gasolina.',
       'Requiere sensores específicos (como los que implementarás en tu ESP32) ya que las llamas de hidrógeno son casi invisibles a la luz del día.',
@@ -75,6 +81,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Impacto',
     'icono': Icons.eco,
     'color': Colors.lightGreen,
+    'imagen': 'assets/home_images/electrolisis_home.png',
     'diapositivas': [
       'La "Gama de Colores" del hidrógeno clasifica su origen según las emisiones de su producción.',
       'Gris: A partir de gas natural (con emisiones de CO₂).\nAzul: Gas natural con captura de CO₂.\nVerde: Electrólisis con energías renovables (Cero emisiones).',
