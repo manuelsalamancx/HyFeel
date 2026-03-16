@@ -60,6 +60,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/home_images/
   fonts:
     - family: MiFuenteTFG  # Este es el nombre que usarás en el código
       fonts:

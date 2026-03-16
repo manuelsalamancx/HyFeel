@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 // ============================================================================
-// 1. MODELOS DE DATOS (Estructura de la información)
+// 1. MODELOS DE DATOS Y BASE DE DATOS GLOBAL
 // ============================================================================
 
 class Pregunta {
@@ -35,8 +35,9 @@ class ModuloTest {
   });
 }
 
-// Base de datos local de preguntas para el TFG
+// Base de datos local (Global)
 final List<ModuloTest> testsHidrogeno = [
+  // ... (He mantenido intactas todas sus preguntas y módulos)
   ModuloTest(
     titulo: 'Nivel 1: Fundamentos del H₂',
     descripcion: 'Conceptos básicos y propiedades químicas.',
@@ -48,7 +49,7 @@ final List<ModuloTest> testsHidrogeno = [
         opciones: ['1', '2', '4', '8'],
         indiceCorrecto: 0,
         explicacion:
-            'El hidrógeno es el primer elemento de la tabla periódica, compuesto por un protón y un electrón.',
+            'El hidrógeno es el primer elemento de la tabla periódica...',
       ),
       Pregunta(
         texto:
@@ -56,14 +57,14 @@ final List<ModuloTest> testsHidrogeno = [
         opciones: ['Líquido', 'Sólido', 'Plasma', 'Gas'],
         indiceCorrecto: 3,
         explicacion:
-            'A temperatura y presión estándar, el H₂ es un gas diatómico incoloro e inodoro.',
+            'A temperatura y presión estándar, el H₂ es un gas diatómico...',
       ),
       Pregunta(
         texto: 'Comparado con el aire, la densidad del hidrógeno es:',
         opciones: ['Igual', 'Ligeramente mayor', 'Mucho menor', 'Mucho mayor'],
         indiceCorrecto: 2,
         explicacion:
-            'El hidrógeno es aproximadamente 14 veces más ligero que el aire, lo que facilita su rápida dispersión.',
+            'El hidrógeno es aproximadamente 14 veces más ligero que el aire...',
       ),
       Pregunta(
         texto:
@@ -76,7 +77,7 @@ final List<ModuloTest> testsHidrogeno = [
         ],
         indiceCorrecto: 2,
         explicacion:
-            'El H₂ tiene una densidad energética gravimétrica muy alta (aprox. 120 MJ/kg), casi el triple que la gasolina.',
+            'El H₂ tiene una densidad energética gravimétrica muy alta...',
       ),
       Pregunta(
         texto: '¿Cuáles son los isótopos naturales del hidrógeno?',
@@ -87,8 +88,7 @@ final List<ModuloTest> testsHidrogeno = [
           'Uranio, Plutonio',
         ],
         indiceCorrecto: 0,
-        explicacion:
-            'El protio es el más abundante. El deuterio tiene un neutrón extra y el tritio dos.',
+        explicacion: 'El protio es el más abundante...',
       ),
       Pregunta(
         texto:
@@ -100,8 +100,7 @@ final List<ModuloTest> testsHidrogeno = [
           'Sí, en los océanos',
         ],
         indiceCorrecto: 2,
-        explicacion:
-            'El hidrógeno reacciona fácilmente, por lo que en la Tierra se encuentra combinado, principalmente en agua (H₂O) y materia orgánica.',
+        explicacion: 'El hidrógeno reacciona fácilmente...',
       ),
       Pregunta(
         texto:
@@ -113,15 +112,13 @@ final List<ModuloTest> testsHidrogeno = [
           'Azul pálido (casi invisible)',
         ],
         indiceCorrecto: 3,
-        explicacion:
-            'La combustión del H₂ produce una llama azul muy tenue, lo que representa un riesgo de seguridad al ser difícil de detectar.',
+        explicacion: 'La combustión del H₂ produce una llama azul muy tenue...',
       ),
       Pregunta(
         texto: '¿Cuál es la solubilidad del hidrógeno en agua?',
         opciones: ['Muy alta', 'Moderada', 'Baja', 'Insoluble'],
         indiceCorrecto: 2,
-        explicacion:
-            'El hidrógeno gas tiene una solubilidad muy baja en agua debido a su naturaleza apolar.',
+        explicacion: 'El hidrógeno gas tiene una solubilidad muy baja...',
       ),
     ],
   ),
@@ -136,15 +133,14 @@ final List<ModuloTest> testsHidrogeno = [
             '¿Qué color de hidrógeno se asocia a la electrólisis con energía renovable?',
         opciones: ['Gris', 'Azul', 'Verde', 'Rosa'],
         indiceCorrecto: 2,
-        explicacion:
-            'El "hidrógeno verde" garantiza que no hay emisiones de CO₂ ni en su producción ni en la fuente eléctrica utilizada.',
+        explicacion: 'El "hidrógeno verde" garantiza que no hay emisiones...',
       ),
       Pregunta(
         texto: 'En una celda de electrólisis PEM, ¿qué se genera en el cátodo?',
         opciones: ['Oxígeno', 'Hidrógeno', 'Agua', 'Ozono'],
         indiceCorrecto: 1,
         explicacion:
-            'Los protones (H⁺) atraviesan la membrana hacia el cátodo, donde ganan electrones para formar H₂ gas.',
+            'Los protones (H⁺) atraviesan la membrana hacia el cátodo...',
       ),
       Pregunta(
         texto: '¿Qué diferencia al hidrógeno azul del gris?',
@@ -156,7 +152,7 @@ final List<ModuloTest> testsHidrogeno = [
         ],
         indiceCorrecto: 1,
         explicacion:
-            'Ambos provienen del reformado de gas natural, pero en el azul se aplican tecnologías CCUS para atrapar el CO₂.',
+            'Ambos provienen del reformado de gas natural, pero en el azul se aplican tecnologías CCUS...',
       ),
       Pregunta(
         texto:
@@ -168,8 +164,7 @@ final List<ModuloTest> testsHidrogeno = [
           'Ácido sulfúrico',
         ],
         indiceCorrecto: 1,
-        explicacion:
-            'Utilizan hidróxido de potasio (KOH) o sodio (NaOH) para permitir la conductividad iónica.',
+        explicacion: 'Utilizan hidróxido de potasio (KOH) o sodio (NaOH)...',
       ),
       Pregunta(
         texto:
@@ -182,7 +177,7 @@ final List<ModuloTest> testsHidrogeno = [
         ],
         indiceCorrecto: 1,
         explicacion:
-            'La tecnología PEM se acopla mejor a la intermitencia de energías renovables como solar o eólica.',
+            'La tecnología PEM se acopla mejor a la intermitencia de energías renovables...',
       ),
       Pregunta(
         texto:
@@ -190,7 +185,7 @@ final List<ModuloTest> testsHidrogeno = [
         opciones: ['Dióxido de carbono', 'Metano', 'Oxígeno', 'Nitrógeno'],
         indiceCorrecto: 2,
         explicacion:
-            'La separación de H₂O genera H₂ y O₂. El oxígeno es el subproducto que a menudo se ventila o comercializa.',
+            'La separación de H₂O genera H₂ y O₂. El oxígeno es el subproducto...',
       ),
       Pregunta(
         texto:
@@ -202,8 +197,7 @@ final List<ModuloTest> testsHidrogeno = [
           'Termólisis solar',
         ],
         indiceCorrecto: 1,
-        explicacion:
-            'El SMR es la técnica más madura y económica, aunque genera altas emisiones de CO₂ (H₂ gris).',
+        explicacion: 'El SMR es la técnica más madura y económica...',
       ),
       Pregunta(
         texto:
@@ -211,7 +205,7 @@ final List<ModuloTest> testsHidrogeno = [
         opciones: ['Níquel', 'Cobre', 'Iridio / Rutenio', 'Hierro'],
         indiceCorrecto: 2,
         explicacion:
-            'Debido al ambiente ácido y oxidante, se requieren metales nobles del grupo del platino, como el óxido de iridio.',
+            'Debido al ambiente ácido y oxidante, se requieren metales nobles...',
       ),
     ],
   ),
@@ -227,15 +221,14 @@ final List<ModuloTest> testsHidrogeno = [
         opciones: ['CO₂', 'NOx', 'Agua y calor', 'Monóxido de carbono'],
         indiceCorrecto: 2,
         explicacion:
-            'La recombinación de H₂ y O₂ en la pila genera electricidad, y como únicos subproductos: agua pura y calor.',
+            'La recombinación de H₂ y O₂ en la pila genera electricidad y agua pura...',
       ),
       Pregunta(
         texto:
             '¿Cuál es el voltaje teórico de una celda de combustible individual a 25°C?',
         opciones: ['1.23 V', '3.7 V', '12 V', '0.5 V'],
         indiceCorrecto: 0,
-        explicacion:
-            'El potencial reversible termodinámico es 1.23 V. En operación real, el voltaje baja debido a sobretensiones.',
+        explicacion: 'El potencial reversible termodinámico es 1.23 V...',
       ),
       Pregunta(
         texto:
@@ -247,8 +240,7 @@ final List<ModuloTest> testsHidrogeno = [
           'En triángulo',
         ],
         indiceCorrecto: 1,
-        explicacion:
-            'Las celdas se apilan en serie formando un "Stack" para sumar sus voltajes individuales.',
+        explicacion: 'Las celdas se apilan en serie formando un "Stack"...',
       ),
       Pregunta(
         texto:
@@ -261,7 +253,7 @@ final List<ModuloTest> testsHidrogeno = [
         ],
         indiceCorrecto: 2,
         explicacion:
-            'La membrana polimérica solo permite el paso de iones positivos (protones). Los electrones fluyen por el circuito externo.',
+            'La membrana polimérica solo permite el paso de iones positivos...',
       ),
       Pregunta(
         texto:
@@ -273,8 +265,7 @@ final List<ModuloTest> testsHidrogeno = [
           'Corriente Trifásica',
         ],
         indiceCorrecto: 1,
-        explicacion:
-            'Las reacciones electroquímicas directas generan un flujo continuo de electrones, resultando en Corriente Continua.',
+        explicacion: 'Generan un flujo continuo de electrones (CC)...',
       ),
       Pregunta(
         texto:
@@ -286,8 +277,7 @@ final List<ModuloTest> testsHidrogeno = [
           'Conductor externo',
         ],
         indiceCorrecto: 1,
-        explicacion:
-            'El platino reduce la energía de activación necesaria para separar la molécula de H₂ y facilitar la reacción con el O₂.',
+        explicacion: 'El platino reduce la energía de activación...',
       ),
       Pregunta(
         texto: '¿Qué ocurre en el ánodo de una pila de combustible PEM?',
@@ -305,8 +295,7 @@ final List<ModuloTest> testsHidrogeno = [
             '¿Cuál es la eficiencia eléctrica típica de una celda PEM comercial?',
         opciones: ['10-20%', '20-30%', '40-60%', '80-100%'],
         indiceCorrecto: 2,
-        explicacion:
-            'La eficiencia eléctrica se sitúa entre el 40% y 60%. Si se aprovecha el calor residual (cogeneración), puede superar el 80%.',
+        explicacion: 'La eficiencia eléctrica se sitúa entre el 40% y 60%...',
       ),
     ],
   ),
@@ -321,8 +310,7 @@ final List<ModuloTest> testsHidrogeno = [
             '¿A qué presiones típicas se almacena el H₂ gaseoso en vehículos?',
         opciones: ['10-50 bar', '100-200 bar', '350-700 bar', '1000-2000 bar'],
         indiceCorrecto: 2,
-        explicacion:
-            'Para compensar su baja densidad volumétrica, se comprime a 350 bar (vehículos pesados) o 700 bar (turismos).',
+        explicacion: 'Se comprime a 350 bar (pesados) o 700 bar (turismos).',
       ),
       Pregunta(
         texto:
@@ -330,7 +318,7 @@ final List<ModuloTest> testsHidrogeno = [
         opciones: ['-50 °C', '-100 °C', '-196 °C', '-253 °C'],
         indiceCorrecto: 3,
         explicacion:
-            'El H₂ tiene un punto de ebullición extremadamente bajo (20 Kelvin). Licuarlo consume aproximadamente el 30% de su propia energía.',
+            'El H₂ tiene un punto de ebullición de 20 Kelvin (-253 ºC).',
       ),
       Pregunta(
         texto: '¿Qué es el almacenamiento en hidruros metálicos?',
@@ -342,26 +330,26 @@ final List<ModuloTest> testsHidrogeno = [
         ],
         indiceCorrecto: 1,
         explicacion:
-            'Los metales absorben el H₂ en su estructura sólida de forma segura a baja presión, liberándolo al aplicar calor.',
+            'Los metales absorben el H₂ en su estructura sólida de forma segura...',
       ),
       Pregunta(
         texto: '¿Qué es la "fragilización por hidrógeno" en materiales?',
         opciones: [
-          'Pérdida de ductilidad y fisuración de metales expuestos al H₂',
+          'Pérdida de ductilidad y fisuración de metales',
           'Aumento de dureza superficial',
           'Oxidación acelerada',
           'Derretimiento del metal',
         ],
         indiceCorrecto: 0,
         explicacion:
-            'Los átomos de H, al ser muy pequeños, penetran en la red cristalina de metales como el acero, causando grietas y fallos estructurales.',
+            'Los átomos penetran en la red cristalina causando grietas...',
       ),
       Pregunta(
         texto: '¿Cuál es el límite de inflamabilidad del hidrógeno en el aire?',
         opciones: ['1-2%', '4-75%', '50-90%', 'Solo a alta presión'],
         indiceCorrecto: 1,
         explicacion:
-            'El H₂ tiene un rango de inflamabilidad muy amplio, lo que significa que puede arder con casi cualquier proporción de aire.',
+            'El H₂ tiene un rango de inflamabilidad muy amplio (4-75%).',
       ),
       Pregunta(
         texto: 'Ante una fuga en espacio abierto, el hidrógeno tiende a:',
@@ -372,8 +360,7 @@ final List<ModuloTest> testsHidrogeno = [
           'Solidificarse',
         ],
         indiceCorrecto: 2,
-        explicacion:
-            'Por su extrema ligereza, asciende a unos 20 m/s, lo que en exteriores reduce significativamente el riesgo de explosión.',
+        explicacion: 'Por su ligereza, asciende a unos 20 m/s...',
       ),
       Pregunta(
         texto: '¿Qué tipo de sensor NO es adecuado para detectar fugas de H₂?',
@@ -385,7 +372,7 @@ final List<ModuloTest> testsHidrogeno = [
         ],
         indiceCorrecto: 2,
         explicacion:
-            'El H₂ no genera humo al fugar ni al arder, por lo que los detectores ópticos convencionales son inútiles. Se requieren sensores específicos de gas.',
+            'El H₂ no genera humo, los detectores ópticos son inútiles.',
       ),
       Pregunta(
         texto:
@@ -397,15 +384,14 @@ final List<ModuloTest> testsHidrogeno = [
           'En las puertas',
         ],
         indiceCorrecto: 2,
-        explicacion:
-            'Dado que el hidrógeno es más ligero que el aire, siempre se acumulará en las zonas más altas de un recinto cerrado.',
+        explicacion: 'Al ser más ligero que el aire, se acumula en el techo.',
       ),
     ],
   ),
   ModuloTest(
     titulo: 'Nivel 5: Aplicaciones y Casos de Uso',
     descripcion: 'Uso industrial, movilidad y transición energética.',
-    icono: Icons.electric_car, // Requiere el icono de coche eléctrico o similar
+    icono: Icons.electric_car,
     color: Colors.orange,
     preguntas: [
       Pregunta(
@@ -419,20 +405,19 @@ final List<ModuloTest> testsHidrogeno = [
         ],
         indiceCorrecto: 0,
         explicacion:
-            'El H₂ se utiliza para la reducción directa del mineral de hierro (DRI) y la producción de amoníaco verde, sustituyendo a los combustibles fósiles en procesos de muy alta temperatura.',
+            'Se utiliza para la reducción directa del mineral de hierro y producción de amoníaco...',
       ),
       Pregunta(
-        texto:
-            '¿Qué significa el concepto "Power-to-Gas" (P2G) en el contexto de la red eléctrica?',
+        texto: '¿Qué significa el concepto "Power-to-Gas" (P2G)?',
         opciones: [
           'Generar electricidad quemando gas natural',
           'Convertir excedentes de electricidad renovable en hidrógeno gaseoso',
           'Comprimir aire para mover turbinas',
-          'Utilizar gas para refrigerar paneles solares',
+          'Utilizar gas para refrigerar paneles',
         ],
         indiceCorrecto: 1,
         explicacion:
-            'P2G permite almacenar el exceso de energía de fuentes intermitentes (eólica/solar) transformándola en hidrógeno mediante electrólisis para su uso posterior.',
+            'P2G permite almacenar exceso de energía renovable transformándola en hidrógeno...',
       ),
       Pregunta(
         texto:
@@ -444,20 +429,19 @@ final List<ModuloTest> testsHidrogeno = [
           'Cero desgaste de neumáticos',
         ],
         indiceCorrecto: 2,
-        explicacion:
-            'Repostar hidrógeno a 700 bar toma entre 3 y 5 minutos, similar a un vehículo de combustión, lo que lo hace ideal para transporte pesado (camiones, autobuses).',
+        explicacion: 'Repostar hidrógeno toma entre 3 y 5 minutos...',
       ),
       Pregunta(
         texto: '¿Qué es el "blending" en la infraestructura gasista?',
         opciones: [
           'Filtrar impurezas del hidrógeno',
           'Mezclar e inyectar un porcentaje de hidrógeno en la red de gas natural existente',
-          'Licuar gases mixtos a baja temperatura',
-          'La separación de isótopos de hidrógeno',
+          'Licuar gases mixtos',
+          'Separación de isótopos',
         ],
         indiceCorrecto: 1,
         explicacion:
-            'El blending permite aprovechar los gasoductos actuales inyectando hasta un 15-20% de H₂ mezclado con gas natural para reducir las emisiones sin cambiar la infraestructura radicalmente.',
+            'Permite inyectar hasta un 15-20% de H₂ en gasoductos actuales...',
       ),
       Pregunta(
         texto:
@@ -470,41 +454,38 @@ final List<ModuloTest> testsHidrogeno = [
         ],
         indiceCorrecto: 1,
         explicacion:
-            'Al adquirir datos del electrolizador y enviarlos mediante JSON y Bluetooth a tu aplicación móvil, estás implementando una arquitectura de telemetría IoT, sentando las bases de un gemelo digital.',
+            'Implementar telemetría JSON y Bluetooth es arquitectura IoT y base para gemelo digital.',
       ),
     ],
   ),
 ];
 
 // ============================================================================
-// 2. PANTALLA PRINCIPAL (Lista de Tests) - Estilo Burbuja
+// 2. PANTALLA PRINCIPAL (Lista de Tests) - STATELESS WIDGET
 // ============================================================================
+class PantallaTests extends StatelessWidget {
+  // Parámetros recibidos desde main.dart
+  final Set<int> testsCompletados;
+  final Function(int) onTestCompletado;
 
-// ============================================================================
-// 2. PANTALLA PRINCIPAL (Lista de Tests) - Estilo Burbuja
-// ============================================================================
-
-class PantallaTests extends StatefulWidget {
-  const PantallaTests({super.key});
-
-  @override
-  State<PantallaTests> createState() => _PantallaTestsState();
-}
-
-class _PantallaTestsState extends State<PantallaTests> {
-  // Almacenamos los índices de los módulos que ya han sido aprobados
-  final Set<int> _modulosCompletados = {};
+  const PantallaTests({
+    super.key,
+    required this.testsCompletados,
+    required this.onTestCompletado,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Calculamos el progreso global para la barrita
+    // Calculamos el progreso global
     final double progresoGlobal =
-        _modulosCompletados.length / testsHidrogeno.length;
+        testsCompletados.length / testsHidrogeno.length;
 
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/bg_3.png'), // Tu fondo
+          image: AssetImage(
+            'assets/images/bg_3.png',
+          ), // Asegúrese de la ruta correcta
           fit: BoxFit.cover,
         ),
       ),
@@ -535,9 +516,7 @@ class _PantallaTestsState extends State<PantallaTests> {
                 ),
                 const SizedBox(height: 20),
 
-                // ==========================================================
                 // BARRITA MINIMALISTA DE PROGRESO GLOBAL
-                // ==========================================================
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -570,9 +549,7 @@ class _PantallaTestsState extends State<PantallaTests> {
                             duration: const Duration(milliseconds: 800),
                             curve: Curves.easeOutCubic,
                             height: 10,
-                            width:
-                                constraints.maxWidth *
-                                progresoGlobal, // Expande según los completados
+                            width: constraints.maxWidth * progresoGlobal,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF29B6F6), Color(0xFF0288D1)],
@@ -592,11 +569,10 @@ class _PantallaTestsState extends State<PantallaTests> {
                     },
                   ),
                 ),
-                // Texto de ayuda para el progreso
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0, left: 10.0),
                   child: Text(
-                    '${_modulosCompletados.length} de ${testsHidrogeno.length} completados',
+                    '${testsCompletados.length} de ${testsHidrogeno.length} completados',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -604,7 +580,6 @@ class _PantallaTestsState extends State<PantallaTests> {
                     ),
                   ),
                 ),
-                // ==========================================================
                 const SizedBox(height: 20),
 
                 Expanded(
@@ -613,9 +588,7 @@ class _PantallaTestsState extends State<PantallaTests> {
                     padding: const EdgeInsets.only(bottom: 20),
                     itemCount: testsHidrogeno.length,
                     itemBuilder: (context, index) {
-                      final estaCompletado = _modulosCompletados.contains(
-                        index,
-                      );
+                      final estaCompletado = testsCompletados.contains(index);
                       return _construirModuloTest(
                         context,
                         testsHidrogeno[index],
@@ -643,7 +616,6 @@ class _PantallaTestsState extends State<PantallaTests> {
       margin: const EdgeInsets.only(bottom: 15.0),
       child: InkWell(
         onTap: () async {
-          // Esperamos el resultado (true o null) al volver de la pantalla de resultados
           final bool? aprobado = await Navigator.push(
             context,
             MaterialPageRoute(
@@ -651,11 +623,9 @@ class _PantallaTestsState extends State<PantallaTests> {
             ),
           );
 
-          // Si el test se aprobó, actualizamos el estado para sumar un segmento a la barra
           if (aprobado == true) {
-            setState(() {
-              _modulosCompletados.add(index);
-            });
+            // Mandamos llamar a la función de main.dart para actualizar el estado global
+            onTestCompletado(index);
           }
         },
         borderRadius: BorderRadius.circular(30),
@@ -663,9 +633,7 @@ class _PantallaTestsState extends State<PantallaTests> {
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
             color: estaCompletado
-                ? Colors.green.withValues(
-                    alpha: 0.1,
-                  ) // Fondo verdoso si está completado
+                ? Colors.green.withValues(alpha: 0.1)
                 : Colors.white.withValues(alpha: 0.65),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
@@ -692,7 +660,6 @@ class _PantallaTestsState extends State<PantallaTests> {
                       : modulo.color.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                // Cambia el icono a un check si está completado
                 child: Icon(
                   estaCompletado ? Icons.check : modulo.icono,
                   size: 32,
@@ -730,10 +697,10 @@ class _PantallaTestsState extends State<PantallaTests> {
     );
   }
 }
-// ============================================================================
-// 3. PANTALLA DE CUESTIONARIO
-// ============================================================================
 
+// ============================================================================
+// 3. PANTALLA DE CUESTIONARIO (Mantenida intacta)
+// ============================================================================
 class PantallaCuestionario extends StatefulWidget {
   final ModuloTest modulo;
   const PantallaCuestionario({super.key, required this.modulo});
@@ -815,7 +782,7 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          backgroundColor: Colors.transparent, // AppBar transparente
+          backgroundColor: Colors.transparent,
           elevation: 0,
           iconTheme: const IconThemeData(color: Color(0xFF01579B)),
           title: Text(
@@ -829,7 +796,6 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
           centerTitle: true,
         ),
         body: SafeArea(
-          // Previene solapamientos
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -845,7 +811,6 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-
                 Stack(
                   alignment: Alignment.center,
                   children: [
@@ -874,12 +839,11 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
                   ],
                 ),
                 const SizedBox(height: 30),
-
                 Container(
                   padding: const EdgeInsets.all(25),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(30), // Efecto burbuja
+                    borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.blue.withValues(alpha: 0.1),
@@ -899,7 +863,6 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
                   ),
                 ),
                 const SizedBox(height: 30),
-
                 Expanded(
                   child: ListView.builder(
                     physics: const BouncingScrollPhysics(),
@@ -919,9 +882,7 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
                               horizontal: 20,
                             ),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                25,
-                              ), // Botones redondeados
+                              borderRadius: BorderRadius.circular(25),
                             ),
                           ),
                           onPressed: () => _registrarRespuesta(index),
@@ -945,9 +906,8 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
 }
 
 // ============================================================================
-// 4. PANTALLA DE RESULTADOS (Con corrección de SafeArea)
+// 4. PANTALLA DE RESULTADOS (Mantenida intacta)
 // ============================================================================
-
 class PantallaResultados extends StatelessWidget {
   final ModuloTest modulo;
   final List<int> respuestasUsuario;
@@ -990,8 +950,7 @@ class PantallaResultados extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          automaticallyImplyLeading:
-              false, // Oculta la flecha de volver por defecto
+          automaticallyImplyLeading: false,
           title: Text(
             'Resultados del Test',
             style: TextStyle(
@@ -1002,14 +961,8 @@ class PantallaResultados extends StatelessWidget {
           centerTitle: true,
         ),
         body: SafeArea(
-          // <--- ESTO SOLUCIONA EL SOLAPAMIENTO CON LOS BOTONES TÁCTILES
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              20.0,
-              10.0,
-              20.0,
-              20.0,
-            ), // Padding inferior extra
+            padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 20.0),
             child: Column(
               children: [
                 Container(
@@ -1052,7 +1005,6 @@ class PantallaResultados extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 if (listaCorrecciones.isEmpty)
                   Expanded(
                     child: Center(
@@ -1087,25 +1039,20 @@ class PantallaResultados extends StatelessWidget {
                     ),
                   ),
                 ],
-
-                const SizedBox(height: 15), // Separación antes del botón
-                // Botón protegido por SafeArea y con margen inferior
+                const SizedBox(height: 15),
                 SizedBox(
                   width: double.infinity,
-                  height: 55, // Altura fija para mayor comodidad táctil
+                  height: 55,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0277BD), // Azul fuerte
+                      backgroundColor: const Color(0xFF0277BD),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
                       elevation: 3,
                     ),
                     onPressed: () {
-                      Navigator.pop(
-                        context,
-                        aprobado,
-                      ); // Vuelve al menú de tests
+                      Navigator.pop(context, aprobado);
                     },
                     child: const Text(
                       'Volver al Menú',

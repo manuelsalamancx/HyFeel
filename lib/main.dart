@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'contents.dart'; // Importamos la UI de contenidos y la base de datos 'modulosHidrogenoGlobal'
+import 'contents.dart';
 import 'tests.dart';
 import 'connect.dart';
 
@@ -10,9 +10,6 @@ void main() {
   runApp(const MiTFGApp());
 }
 
-// =========================================================================
-// CONFIGURACIÓN GENERAL PARAMETROS DE LA APP
-// =========================================================================
 class MiTFGApp extends StatelessWidget {
   const MiTFGApp({super.key});
 
@@ -38,7 +35,7 @@ class MiTFGApp extends StatelessWidget {
 }
 
 // =========================================================================
-// GESTOR DE NAVEGACIÓN Y ESTADO CENTRAL (LIFTING STATE UP)
+// GESTOR DE NAVEGACIÓN Y ESTADO CENTRAL
 // =========================================================================
 class PaginaBase extends StatefulWidget {
   final int indiceInicial;
@@ -51,8 +48,8 @@ class PaginaBase extends StatefulWidget {
 class _PaginaBaseState extends State<PaginaBase> {
   late int _indiceActual = 0;
 
-  // ESTADO GLOBAL: La única fuente de la verdad para el progreso del usuario
   final Set<int> _modulosCompletados = {};
+  final Set<int> _testsCompletados = {};
 
   @override
   void initState() {
@@ -72,22 +69,30 @@ class _PaginaBaseState extends State<PaginaBase> {
     });
   }
 
+  void _marcarTestCompletado(int index) {
+    setState(() {
+      _testsCompletados.add(index);
+    });
+  }
+
   List<Widget> get _pantallas => [
-    // Pestaña 0: Home
     PantallaPrincipal(
       modulosCompletados: _modulosCompletados,
       onModuloCompletado: _marcarModuloCompletado,
-      onIrAContenidos: () => _cambiarPestana(1), // Inyección de redirección
-      onVerMasTests: () => _cambiarPestana(2),
+      onIrAContenidos: () => _cambiarPestana(1),
+      testsCompletados: _testsCompletados,
+      onTestCompletado: _marcarTestCompletado,
+      onIrATests: () => _cambiarPestana(2),
     ),
-    // Pestaña 1: Contenidos Completos
     PantallaContenidos(
       modulosCompletados: _modulosCompletados,
       onModuloCompletado: _marcarModuloCompletado,
     ),
-    // Pestañas 2 y 3
-    const PantallaTests(), // Placeholder
-    const PantallaConexion(), // Placeholder
+    PantallaTests(
+      testsCompletados: _testsCompletados,
+      onTestCompletado: _marcarTestCompletado,
+    ),
+    const PantallaConexion(), // ESP32 Monitor
   ];
 
   final List<String> _fondos = [
@@ -125,6 +130,7 @@ class _PaginaBaseState extends State<PaginaBase> {
           height: double.infinity,
           decoration: BoxDecoration(
             color: Colors.blueGrey,
+            // Fallback por si la imagen local falla
             image: DecorationImage(
               image: AssetImage(_fondos[_indiceActual]),
               fit: BoxFit.cover,
@@ -196,41 +202,47 @@ class _PaginaBaseState extends State<PaginaBase> {
 }
 
 // =========================================================================
-// PANTALLA PRINCIPAL (HOME)
+// PANTALLA PRINCIPAL (HOME) - MÓDULOS GRANDES CON ILUSTRACIÓN
 // =========================================================================
-class PantallaPrincipal extends StatefulWidget {
+class PantallaPrincipal extends StatelessWidget {
   final Set<int> modulosCompletados;
   final Function(int) onModuloCompletado;
   final VoidCallback onIrAContenidos;
-  final VoidCallback? onVerMasTests;
+
+  final Set<int> testsCompletados;
+  final Function(int) onTestCompletado;
+  final VoidCallback onIrATests;
 
   const PantallaPrincipal({
     super.key,
     required this.modulosCompletados,
     required this.onModuloCompletado,
     required this.onIrAContenidos,
-    this.onVerMasTests,
+    required this.testsCompletados,
+    required this.onTestCompletado,
+    required this.onIrATests,
   });
 
-  @override
-  State<PantallaPrincipal> createState() => _PantallaPrincipalState();
-}
+  // URLs de demostración para que la App luzca increíble hasta que tenga sus ilustraciones
+  final List<String> imagenesTeoriaDemo = const [
+    'assets/home_images/electrolisis_home.png', // Tecnología/Agua
+    'https://images.unsplash.com/photo-1509391366360-12009a30f14b?q=80&w=600&auto=format&fit=crop', // Energía
+    'https://images.unsplash.com/photo-1542281286-9e0a16bb7366?q=80&w=600&auto=format&fit=crop', // Almacenamiento/Futuro
+    'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?q=80&w=600&auto=format&fit=crop', // Aplicaciones
+  ];
 
-class _PantallaPrincipalState extends State<PantallaPrincipal> {
-  // Estado local exclusivo para los tests (hasta que los centralice también en un futuro)
-  final Set<int> _testsCompletados = {};
-
-  final List<Map<String, dynamic>> _modulosTests = [
-    {'titulo': 'Test Básico H₂', 'icono': Icons.quiz, 'color': Colors.orange},
-    {'titulo': 'Eficiencia', 'icono': Icons.speed, 'color': Colors.purple},
+  final List<String> imagenesTestsDemo = const [
+    'https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=600&auto=format&fit=crop', // Ciencia 1
+    'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?q=80&w=600&auto=format&fit=crop', // Laboratorio
+    'https://images.unsplash.com/photo-1483808161634-29aa1b1151c0?q=80&w=600&auto=format&fit=crop', // Energía
+    'https://images.unsplash.com/photo-1614729939124-032f0b56c95b?q=80&w=600&auto=format&fit=crop', // Almacenamiento
   ];
 
   @override
   Widget build(BuildContext context) {
-    // CÁLCULO GEOMÉTRICO: Ancho de pantalla menos los márgenes laterales (32px).
-    // Dividimos entre 4.2 para mostrar 4 burbujas enteras y un 20% de la quinta para invitar al scroll.
-    final double anchoTotalDisponible = MediaQuery.of(context).size.width - 32;
-    final double anchoBurbuja = anchoTotalDisponible / 4.2;
+    // Dimensiones para tarjetas grandes y majestuosas
+    const double altoCarrusel = 260.0;
+    const double anchoBurbuja = 220.0;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 100, left: 16, right: 16, bottom: 90),
@@ -241,32 +253,45 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           const Text(
             "El futuro está en tus manos.",
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
               color: Color.fromARGB(255, 13, 71, 161),
             ),
           ),
-          const SizedBox(height: 25),
-          _construirCabeceraSeccion("Módulos Teóricos", widget.onIrAContenidos),
-          const SizedBox(height: 10),
+          const SizedBox(height: 30),
 
-          // CARRUSEL TEORÍA (Conectado a la BD Global de contents.dart)
+          // CABECERA TEORÍA
+          const Text(
+            "Módulos Teóricos",
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 15),
+
+          // CARRUSEL TEORÍA
           SizedBox(
-            height: 160,
+            height: altoCarrusel,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              itemCount: modulosHidrogenoGlobal
-                  .length, // Usamos la lista de contents.dart
+              itemCount: 5, // 4 Módulos + 1 Botón Ver más
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.only(right: 12.0, bottom: 15.0),
+                  padding: const EdgeInsets.only(right: 18.0, bottom: 15.0),
                   child: SizedBox(
                     width: anchoBurbuja,
-                    child: _construirBurbujaTeoria(
-                      modulosHidrogenoGlobal[index],
-                      index,
-                    ),
+                    child: index < 4
+                        ? _construirBurbujaTeoria(
+                            context,
+                            modulosHidrogenoGlobal[index],
+                            index,
+                            imagenesTeoriaDemo[index %
+                                imagenesTeoriaDemo.length],
+                          )
+                        : _construirBurbujaVerMas(onIrAContenidos, Colors.blue),
                   ),
                 );
               },
@@ -274,25 +299,43 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           ),
 
           const SizedBox(height: 35),
-          _construirCabeceraSeccion(
+
+          // CABECERA TESTS
+          const Text(
             "Evaluación Continua",
-            widget.onVerMasTests,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 15),
 
           // CARRUSEL TESTS
           SizedBox(
-            height: 160,
+            height: altoCarrusel,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              itemCount: _modulosTests.length,
+              itemCount: testsHidrogeno.length > 4
+                  ? 5
+                  : testsHidrogeno.length + 1,
               itemBuilder: (context, index) {
                 return Padding(
-                  padding: const EdgeInsets.only(right: 12.0, bottom: 15.0),
+                  padding: const EdgeInsets.only(right: 18.0, bottom: 15.0),
                   child: SizedBox(
                     width: anchoBurbuja,
-                    child: _construirBurbujaTest(_modulosTests[index], index),
+                    child: index < 4 && index < testsHidrogeno.length
+                        ? _construirBurbujaTest(
+                            context,
+                            testsHidrogeno[index],
+                            index,
+                            imagenesTestsDemo[index % imagenesTestsDemo.length],
+                          )
+                        : _construirBurbujaVerMas(
+                            onIrATests,
+                            Colors.deepOrange,
+                          ),
                   ),
                 );
               },
@@ -303,38 +346,20 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
     );
   }
 
-  Widget _construirCabeceraSeccion(String titulo, VoidCallback? accion) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          titulo,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        TextButton(
-          onPressed: accion,
-          child: const Text(
-            "Ver todo >",
-            style: TextStyle(
-              color: Color.fromARGB(255, 13, 71, 161),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _construirBurbujaTeoria(Map<String, dynamic> modulo, int index) {
-    final bool estaCompletado = widget.modulosCompletados.contains(index);
+  Widget _construirBurbujaTeoria(
+    BuildContext context,
+    Map<String, dynamic> modulo,
+    int index,
+    String urlImagen,
+  ) {
+    final bool estaCompletado = modulosCompletados.contains(index);
 
     return _plantillaBurbujaUI(
-      modulo: modulo,
+      titulo: modulo['titulo'],
+      icono: modulo['icono'],
+      color: modulo['color'],
       estaCompletado: estaCompletado,
+      urlImagen: urlImagen,
       onTap: () async {
         final resultado = await Navigator.push(
           context,
@@ -343,103 +368,225 @@ class _PantallaPrincipalState extends State<PantallaPrincipal> {
           ),
         );
         if (resultado == true) {
-          widget.onModuloCompletado(index); // Actualiza estado global
-          widget.onIrAContenidos(); // Fuerzo transición a pestaña de contenidos
+          onModuloCompletado(index);
+          onIrAContenidos();
         }
       },
     );
   }
 
-  Widget _construirBurbujaTest(Map<String, dynamic> modulo, int index) {
-    final bool estaCompletado = _testsCompletados.contains(index);
+  Widget _construirBurbujaTest(
+    BuildContext context,
+    ModuloTest modulo,
+    int index,
+    String urlImagen,
+  ) {
+    final bool estaCompletado = testsCompletados.contains(index);
 
     return _plantillaBurbujaUI(
-      modulo: modulo,
+      titulo: modulo.titulo,
+      icono: modulo.icono,
+      color: modulo.color,
       estaCompletado: estaCompletado,
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Abriendo evaluación: ${modulo['titulo']}")),
+      urlImagen: urlImagen,
+      onTap: () async {
+        final bool? aprobado = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PantallaCuestionario(modulo: modulo),
+          ),
         );
-        setState(() {
-          _testsCompletados.add(index);
-        });
+        if (aprobado == true) {
+          onTestCompletado(index);
+          onIrATests();
+        }
       },
     );
   }
 
-  // Refactorización de la UI de la burbuja para evitar duplicar código entre Test y Teoría
-  Widget _plantillaBurbujaUI({
-    required Map<String, dynamic> modulo,
-    required bool estaCompletado,
-    required VoidCallback onTap,
-  }) {
+  // BURBUJA "VER MÁS..." ESTILIZADA
+  Widget _construirBurbujaVerMas(VoidCallback onTap, Color colorBase) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(30),
       child: Container(
         decoration: BoxDecoration(
-          color: estaCompletado
-              ? Colors.white.withValues(alpha: 0.85)
-              : Colors.white.withValues(alpha: 0.65),
-          borderRadius: BorderRadius.circular(
-            20,
-          ), // Reducido ligeramente para acomodar 4 elementos
-          border: Border.all(
-            color: estaCompletado
-                ? Colors.green.withValues(alpha: 0.8)
-                : Colors.white.withValues(alpha: 0.9),
-            width: estaCompletado ? 2.5 : 1.5,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              colorBase.withValues(alpha: 0.7),
+              colorBase.withValues(alpha: 0.9),
+            ],
           ),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: modulo['color'].withValues(alpha: 0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: colorBase.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (estaCompletado)
-              const Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: EdgeInsets.only(right: 8.0),
-                  child: Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
-                    size: 16,
+            Container(
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.arrow_forward_rounded,
+                size: 40,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "Ver todos\nlos módulos",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // =========================================================================
+  // PLANTILLA MAESTRA: ILUSTRACIÓN DE FONDO Y TEXTO INFERIOR
+  // =========================================================================
+  Widget _plantillaBurbujaUI({
+    required String titulo,
+    required IconData icono,
+    required Color color,
+    required bool estaCompletado,
+    required String urlImagen,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(30),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          border: estaCompletado
+              ? Border.all(color: Colors.greenAccent, width: 3)
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: estaCompletado
+                  ? Colors.green.withValues(alpha: 0.5)
+                  : Colors.black.withValues(alpha: 0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+          // --- AQUÍ SE CARGA LA IMAGEN DE FONDO ---
+          // REEMPLAZAR POR SU IMAGEN ASSET EN EL FUTURO:
+          // image: DecorationImage(image: AssetImage('assets/su_imagen.png'), fit: BoxFit.cover),
+          image: DecorationImage(
+            image: NetworkImage(urlImagen), // Placeholder de internet
+            fit: BoxFit.cover,
+            // Oscurecemos ligeramente la imagen para que resalte el texto
+            colorFilter: ColorFilter.mode(
+              Colors.black.withValues(alpha: 0.2),
+              BlendMode.darken,
+            ),
+          ),
+        ),
+        child: Stack(
+          children: [
+            // 1. DEGRADADO OSCURO EN LA BASE PARA LEER EL TEXTO
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 100,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(30),
+                    bottomRight: Radius.circular(30),
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.9),
+                      Colors.transparent,
+                    ],
                   ),
                 ),
               ),
-            Container(
-              padding: const EdgeInsets.all(
-                10,
-              ), // Padding reducido para optimizar espacio
-              decoration: BoxDecoration(
-                color: modulo['color'].withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                modulo['icono'],
-                size: 28,
-                color: modulo['color'],
-              ), // Icono más compacto
             ),
-            const SizedBox(height: 10),
+
+            // 2. CONTENIDO SUPERIOR (Icono y Checkmark)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
-              child: Text(
-                modulo['titulo'],
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 12, // Fuente reducida para que encaje bien
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  height: 1.1,
+              padding: const EdgeInsets.all(15.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(icono, size: 24, color: Colors.white),
+                  ),
+                  if (estaCompletado)
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 30,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // 3. TEXTO EN LA PARTE INFERIOR
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(18.0),
+                child: Text(
+                  titulo,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 22, // Título grande
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.1,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 2),
+                        blurRadius: 4.0,
+                        color: Colors.black87,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
