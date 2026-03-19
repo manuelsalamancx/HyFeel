@@ -130,7 +130,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Métodos de obtención y funcionamiento del electrolizador.',
     icono: Icons.water_drop,
     color: Colors.blueAccent,
-    imagen: 'assets/home_images/electrolizador_tests.jpg',
+    imagen: 'assets/home_images/electrolizador_tests.png',
     preguntas: [
       Pregunta(
         texto:
@@ -218,7 +218,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Termodinámica y generación eléctrica inversa.',
     icono: Icons.battery_charging_full,
     color: Colors.green,
-    imagen: 'assets/home_images/fuelcells_tests.jpg',
+    imagen: 'assets/home_images/fuelcells_tests.png',
     preguntas: [
       Pregunta(
         texto:
@@ -309,7 +309,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Normativa, compresión y riesgos operativos.',
     icono: Icons.shield,
     color: Colors.redAccent,
-    imagen: 'assets/home_images/almacenamiento_tests.jpg',
+    imagen: 'assets/home_images/almacenamiento_tests.png',
     preguntas: [
       Pregunta(
         texto:
