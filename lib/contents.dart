@@ -20,7 +20,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Pila de Combustible',
     'icono': Icons.battery_charging_full,
     'color': Colors.green,
-    'imagen': 'assets/home_images/electrolisis_home.png',
+    'imagen': 'assets/home_images/toyotamirai.png',
     'diapositivas': [
       'Una pila de combustible es un dispositivo electroquímico que realiza el proceso inverso a la electrólisis: convierte la energía química del hidrógeno directamente en energía eléctrica limpia.',
       'A diferencia de una batería convencional, no se agota ni necesita recarga. Funciona de manera continua mientras se le suministre combustible (H₂) en el ánodo y un oxidante (O₂ del aire) en el cátodo.',
@@ -31,7 +31,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Almacenamiento',
     'icono': Icons.storage,
     'color': Colors.orange,
-    'imagen': 'assets/home_images/electrolisis_home.png',
+    'imagen': 'assets/home_images/almacenamiento-de-hidrogeno.png',
     'diapositivas': [
       'El hidrógeno es el elemento más ligero y menos denso del universo. Almacenarlo de forma compacta es uno de los mayores retos de la ingeniería actual.',
       'Método 1: Compresión Gaseosa.\nSe almacena a altas presiones, típicamente a 350 o 700 bares, utilizando tanques reforzados con fibra de carbono (Tipo IV).',
@@ -43,7 +43,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Aplicaciones',
     'icono': Icons.rocket_launch,
     'color': Colors.purple,
-    'imagen': 'assets/home_images/electrolisis_home.png',
+    'imagen': 'assets/home_images/airbus_hydro.png',
     'diapositivas': [
       'Movilidad Pesada:\nEl hidrógeno es ideal para camiones, trenes y barcos, donde las baterías de litio son demasiado pesadas o tardan mucho en recargarse.',
       'Industria Intensiva:\nSustitución del gas natural en procesos que requieren altas temperaturas (acero, cemento) o como materia prima química (fertilizantes).',
