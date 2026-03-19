@@ -45,7 +45,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Conceptos básicos y propiedades químicas.',
     icono: Icons.science,
     color: Colors.teal,
-    imagen: ' ',
+    imagen: 'assets/home_images/fundhidro.jpg',
     preguntas: [
       Pregunta(
         texto: '¿Cuál es el número atómico del hidrógeno?',
@@ -130,7 +130,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Métodos de obtención y funcionamiento del electrolizador.',
     icono: Icons.water_drop,
     color: Colors.blueAccent,
-    imagen: ' ',
+    imagen: 'assets/home_images/electrolizador_tests.jpg',
     preguntas: [
       Pregunta(
         texto:
@@ -218,7 +218,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Termodinámica y generación eléctrica inversa.',
     icono: Icons.battery_charging_full,
     color: Colors.green,
-    imagen: ' ',
+    imagen: 'assets/home_images/fuelcells_tests.jpg',
     preguntas: [
       Pregunta(
         texto:
@@ -309,7 +309,7 @@ final List<ModuloTest> testsHidrogeno = [
     descripcion: 'Normativa, compresión y riesgos operativos.',
     icono: Icons.shield,
     color: Colors.redAccent,
-    imagen: ' ',
+    imagen: 'assets/home_images/almacenamiento_tests.jpg',
     preguntas: [
       Pregunta(
         texto:
