@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart'; //base de datos
 import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'contents.dart';
 import 'tests.dart'; //pantallas
@@ -59,10 +61,50 @@ class _PaginaBaseState extends State<PaginaBase> {
   final Set<int> _modulosCompletados = {};
   final Set<int> _testsCompletados = {};
 
+  // Nueva variable para controlar la pantalla de carga inicial
+  bool _cargandoDatos = true;
+
   @override
   void initState() {
     super.initState();
     _indiceActual = widget.indiceInicial;
+    _cargarProgresoDesdeNube(); // 1. LECTURA: Descargamos datos al iniciar
+  }
+
+  // =========================================================================
+  // LÓGICA DE BASE DE DATOS (FIRESTORE)
+  // =========================================================================
+  Future<void> _cargarProgresoDesdeNube() async {
+    final usuario = FirebaseAuth.instance.currentUser;
+    if (usuario != null) {
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(usuario.uid)
+            .get();
+
+        if (doc.exists) {
+          final datos = doc.data()!;
+          setState(() {
+            // Transformamos las listas JSON de la nube a nuestros Sets locales
+            _modulosCompletados.addAll(
+              List<int>.from(datos['modulosCompletados'] ?? []),
+            );
+            _testsCompletados.addAll(
+              List<int>.from(datos['testsCompletados'] ?? []),
+            );
+          });
+        }
+      } catch (e) {
+        debugPrint("Error al cargar datos: $e");
+      }
+    }
+    // Quitamos la pantalla de carga sin importar si hubo error o no
+    if (mounted) {
+      setState(() {
+        _cargandoDatos = false;
+      });
+    }
   }
 
   void _cambiarPestana(int indice) {
@@ -71,18 +113,37 @@ class _PaginaBaseState extends State<PaginaBase> {
     });
   }
 
-  void _marcarModuloCompletado(int index) {
+  // 2. ESCRITURA: Actualizamos la nube al completar un módulo
+  void _marcarModuloCompletado(int index) async {
     setState(() {
       _modulosCompletados.add(index);
     });
+
+    final usuario = FirebaseAuth.instance.currentUser;
+    if (usuario != null) {
+      await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(usuario.uid)
+          .update({'modulosCompletados': _modulosCompletados.toList()});
+    }
   }
 
-  void _marcarTestCompletado(int index) {
+  // 3. ESCRITURA: Actualizamos la nube al completar un test
+  void _marcarTestCompletado(int index) async {
     setState(() {
       _testsCompletados.add(index);
     });
+
+    final usuario = FirebaseAuth.instance.currentUser;
+    if (usuario != null) {
+      await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(usuario.uid)
+          .update({'testsCompletados': _testsCompletados.toList()});
+    }
   }
 
+  // (Mantenemos tus getters _pantallas y _fondos exactamente igual)
   List<Widget> get _pantallas => [
     PantallaPrincipal(
       modulosCompletados: _modulosCompletados,
@@ -112,6 +173,14 @@ class _PaginaBaseState extends State<PaginaBase> {
 
   @override
   Widget build(BuildContext context) {
+    // Si aún está descargando datos, mostramos una pantalla de carga para evitar desincronización
+    if (_cargandoDatos) {
+      return const Scaffold(
+        backgroundColor: Colors.blueGrey,
+        body: Center(child: CircularProgressIndicator(color: Colors.white)),
+      );
+    }
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       extendBody: true,
@@ -126,7 +195,17 @@ class _PaginaBaseState extends State<PaginaBase> {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         foregroundColor: const Color.fromARGB(255, 13, 71, 161),
+        actions: [
+          // Botón opcional para cerrar sesión y probar con otros usuarios
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+            },
+          ),
+        ],
       ),
+      // ... EL RESTO DE TU MÉTODO BUILD SE MANTIENE INTACTO (body, bottomNavigationBar, etc.)
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
         transitionBuilder: (Widget child, Animation<double> animation) {
@@ -139,7 +218,6 @@ class _PaginaBaseState extends State<PaginaBase> {
           decoration: BoxDecoration(
             color: Colors.blueGrey,
             image: DecorationImage(
-              // Si no tiene estas imágenes, se quedará de color sólido blueGrey
               image: AssetImage(_fondos[_indiceActual]),
               fit: BoxFit.cover,
             ),
@@ -147,6 +225,7 @@ class _PaginaBaseState extends State<PaginaBase> {
           child: _pantallas[_indiceActual],
         ),
       ),
+      // ... (bottomNavigationBar sigue igual)
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
