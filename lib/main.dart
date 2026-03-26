@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+
+import 'package:firebase_core/firebase_core.dart'; //base de datos
+import 'firebase_options.dart';
+
 import 'contents.dart';
-import 'tests.dart';
+import 'tests.dart'; //pantallas
 import 'connect.dart';
+import 'auth.dart';
 
 // =========================================================================
 // PUNTO DE ENTRADA PRINCIPAL
 // =========================================================================
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const MiTFGApp());
 }
 
@@ -18,7 +26,7 @@ class MiTFGApp extends StatelessWidget {
     return MaterialApp(
       title: 'HyFeel',
       debugShowCheckedModeBanner: false,
-      home: const PaginaBase(),
+      home: const PuertaAutenticacion(),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color.fromRGBO(119, 235, 243, 1),

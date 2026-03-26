@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1021043862030",
+    "project_id": "hyfeel-54cd2",
+    "storage_bucket": "hyfeel-54cd2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1021043862030:android:b11079fb82fffcddaf2a5f",
+        "android_client_info": {
+          "package_name": "com.example.tfg_monitor_h2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOcq7BGmgK_9590JqXCUIOO9roMrjxr9w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
