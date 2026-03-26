@@ -468,7 +468,7 @@ final List<ModuloTest> testsHidrogeno = [
 ];
 
 // ============================================================================
-// 2. PANTALLA PRINCIPAL (Lista de Tests) - STATELESS WIDGET
+// 2. PANTALLA PRINCIPAL (Lista de Tests) - REFACTORIZADA CON BLOQUEO SECUENCIAL
 // ============================================================================
 class PantallaTests extends StatelessWidget {
   // Parámetros recibidos desde main.dart
@@ -490,9 +490,7 @@ class PantallaTests extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage(
-            'assets/images/bg_3.png',
-          ), // Asegúrese de la ruta correcta
+          image: AssetImage('assets/images/bg_3.png'),
           fit: BoxFit.cover,
         ),
       ),
@@ -518,7 +516,7 @@ class PantallaTests extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 const Text(
-                  'Demuestra lo aprendido en los módulos',
+                  'Demuestra lo aprendido en orden secuencial',
                   style: TextStyle(fontSize: 16, color: Colors.black54),
                 ),
                 const SizedBox(height: 20),
@@ -596,11 +594,19 @@ class PantallaTests extends StatelessWidget {
                     itemCount: testsHidrogeno.length,
                     itemBuilder: (context, index) {
                       final estaCompletado = testsCompletados.contains(index);
+
+                      // LÓGICA DE BLOQUEO SECUENCIAL:
+                      // Está bloqueado si NO es el primer test (index > 0)
+                      // Y el test inmediatamente anterior NO está completado.
+                      final estaBloqueado =
+                          index > 0 && !testsCompletados.contains(index - 1);
+
                       return _construirModuloTest(
                         context,
                         testsHidrogeno[index],
                         index,
                         estaCompletado,
+                        estaBloqueado, // Pasamos el nuevo parámetro
                       );
                     },
                   ),
@@ -618,86 +624,129 @@ class PantallaTests extends StatelessWidget {
     ModuloTest modulo,
     int index,
     bool estaCompletado,
+    bool estaBloqueado,
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15.0),
-      child: InkWell(
-        onTap: () async {
-          final bool? aprobado = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PantallaCuestionario(modulo: modulo),
-            ),
-          );
+      // CORRECCIÓN: Envolvemos el InkWell interactivo en el widget Opacity
+      child: Opacity(
+        opacity: estaBloqueado ? 0.6 : 1.0,
+        child: InkWell(
+          onTap: estaBloqueado
+              ? () {
+                  // Feedback si el usuario intenta entrar a un test bloqueado
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text(
+                        '🔒 Debes aprobar el nivel anterior para desbloquear este test.',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      backgroundColor: Colors.blueGrey[800],
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                  );
+                }
+              : () async {
+                  final bool? aprobado = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          PantallaCuestionario(modulo: modulo),
+                    ),
+                  );
 
-          if (aprobado == true) {
-            // Mandamos llamar a la función de main.dart para actualizar el estado global
-            onTestCompletado(index);
-          }
-        },
-        borderRadius: BorderRadius.circular(30),
-        child: Container(
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: estaCompletado
-                ? Colors.green.withValues(alpha: 0.1)
-                : Colors.white.withValues(alpha: 0.65),
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(
+                  if (aprobado == true) {
+                    onTestCompletado(index);
+                  }
+                },
+          borderRadius: BorderRadius.circular(30),
+          child: Container(
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
               color: estaCompletado
-                  ? Colors.green.withValues(alpha: 0.5)
-                  : Colors.white.withValues(alpha: 0.9),
-              width: 1.5,
+                  ? Colors.green.withValues(alpha: 0.1)
+                  : Colors.white.withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(
+                color: estaCompletado
+                    ? Colors.green.withValues(alpha: 0.5)
+                    : (estaBloqueado
+                          ? Colors.grey.withValues(alpha: 0.3)
+                          : Colors.white.withValues(alpha: 0.9)),
+                width: 1.5,
+              ),
+              boxShadow: estaBloqueado
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: modulo.color.withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
             ),
-            boxShadow: [
-              BoxShadow(
-                color: modulo.color.withValues(alpha: 0.2),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: estaCompletado
-                      ? Colors.green
-                      : modulo.color.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: estaCompletado
+                        ? Colors.green
+                        : (estaBloqueado
+                              ? Colors.grey
+                              : modulo.color.withValues(alpha: 0.2)),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    // Modificación del icono según el estado
+                    estaBloqueado
+                        ? Icons.lock
+                        : (estaCompletado ? Icons.check : modulo.icono),
+                    size: 32,
+                    color: (estaCompletado || estaBloqueado)
+                        ? Colors.white
+                        : modulo.color,
+                  ),
                 ),
-                child: Icon(
-                  estaCompletado ? Icons.check : modulo.icono,
-                  size: 32,
-                  color: estaCompletado ? Colors.white : modulo.color,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      modulo.titulo,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        modulo.titulo,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: estaBloqueado
+                              ? Colors.grey[700]
+                              : Colors.black87,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      modulo.descripcion,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.black54,
+                      const SizedBox(height: 4),
+                      Text(
+                        estaBloqueado
+                            ? 'Completa el nivel anterior primero!'
+                            : modulo.descripcion,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: estaBloqueado
+                              ? Colors.redAccent[200]
+                              : Colors.black54,
+                          fontStyle: estaBloqueado
+                              ? FontStyle.italic
+                              : FontStyle.normal,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

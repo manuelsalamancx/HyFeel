@@ -366,27 +366,55 @@ class PantallaPrincipal extends StatelessWidget {
   ) {
     final bool estaCompletado = testsCompletados.contains(index);
 
-    // Extrae la imagen de la clase (asegúrese de haber añadido la variable en tests.dart)
+    // Lógica secuencial: bloqueado si no es el primero y el anterior no está aprobado
+    final bool estaBloqueado =
+        index > 0 && !testsCompletados.contains(index - 1);
+
+    // Extrae la imagen original de la clase para no perder la estética
     final String urlImagen = modulo.imagen;
 
-    return _plantillaBurbujaUI(
-      titulo: modulo.titulo,
-      icono: modulo.icono,
-      color: modulo.color,
-      estaCompletado: estaCompletado,
-      urlImagen: urlImagen,
-      onTap: () async {
-        final bool? aprobado = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PantallaCuestionario(modulo: modulo),
-          ),
-        );
-        if (aprobado == true) {
-          onTestCompletado(index);
-          onIrATests();
-        }
-      },
+    // Envolvemos la plantilla en Opacity para aplicar el "filtro" visual de bloqueo
+    return Opacity(
+      opacity: estaBloqueado ? 0.6 : 1.0,
+      child: _plantillaBurbujaUI(
+        titulo: modulo.titulo,
+        // Si está bloqueado, mostramos el candado; si no, el icono de la temática
+        icono: estaBloqueado ? Icons.lock : modulo.icono,
+        color: modulo.color, // Mantenemos su color base original
+        estaCompletado: estaCompletado,
+        urlImagen: urlImagen, // Mantenemos su imagen de fondo original
+        onTap: estaBloqueado
+            ? () {
+                // Interceptamos el toque si está bloqueado para mostrar el aviso
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                      '🔒 Debes aprobar el nivel anterior para desbloquear este test.',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    backgroundColor: Colors.blueGrey[800],
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                );
+              }
+            : () async {
+                // Flujo normal de ejecución si está desbloqueado
+                final bool? aprobado = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PantallaCuestionario(modulo: modulo),
+                  ),
+                );
+                if (aprobado == true) {
+                  onTestCompletado(index);
+                  onIrATests();
+                }
+              },
+      ),
     );
   }
 
