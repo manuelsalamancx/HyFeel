@@ -74,7 +74,7 @@ Widget _construirCampoTextoModerno({
 }
 
 // ============================================================================
-// PANTALLA DE LOGIN
+// PANTALLA DE LOGIN (ACTUALIZADA CON RECUPERACIÓN DE CONTRASEÑA)
 // ============================================================================
 class PantallaLogin extends StatefulWidget {
   const PantallaLogin({super.key});
@@ -88,6 +88,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
+  // Método para iniciar sesión
   Future<void> _iniciarSesion() async {
     setState(() => _isLoading = true);
     try {
@@ -197,7 +198,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
                     _construirCampoTextoModerno(
                       controlador: _emailController,
                       icono: Icons.email_outlined,
-                      etiqueta: 'Correo Institucional',
+                      etiqueta: 'Correo Electrónico',
                       tipoTeclado: TextInputType.emailAddress,
                     ),
                     _construirCampoTextoModerno(
@@ -206,6 +207,41 @@ class _PantallaLoginState extends State<PantallaLogin> {
                       etiqueta: 'Contraseña',
                       ocultarTexto: true,
                     ),
+
+                    // --- NUEVA SECCIÓN: Botón de recuperación de contraseña ---
+                    // --- NUEVA SECCIÓN: Botón de recuperación de contraseña ---
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {
+                          // Navegación directa a la nueva pantalla
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const PantallaRecuperacion(),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 0,
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text(
+                          '¿Has olvidado tu contraseña?',
+                          style: TextStyle(
+                            color: Color(0xFF01579B),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                    // ----------------------------------------------------------
                     const SizedBox(height: 20),
                     _isLoading
                         ? const CircularProgressIndicator()
@@ -223,7 +259,7 @@ class _PantallaLoginState extends State<PantallaLogin> {
                               ),
                               onPressed: _iniciarSesion,
                               child: const Text(
-                                'Entrar al Sistema',
+                                'Inicia sesión',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -487,6 +523,206 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                   ),
                 ),
                 const SizedBox(height: 30),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// PANTALLA DE RECUPERACIÓN DE CONTRASEÑA
+// ============================================================================
+class PantallaRecuperacion extends StatefulWidget {
+  const PantallaRecuperacion({super.key});
+
+  @override
+  State<PantallaRecuperacion> createState() => _PantallaRecuperacionState();
+}
+
+class _PantallaRecuperacionState extends State<PantallaRecuperacion> {
+  final _emailController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _enviarCorreoRecuperacion() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, introduce tu correo electrónico.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Enlace enviado! Revisa tu bandeja de Spam.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Opcional: Volver a la pantalla de login tras enviar el correo
+      Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      String mensaje = 'Error al enviar el correo.';
+      if (e.code == 'user-not-found' || e.code == 'invalid-email') {
+        mensaje = 'El correo ingresado no es válido o no está registrado.';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mensaje), backgroundColor: Colors.redAccent),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF01579B)),
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFE1F5FE), Color(0xFF4FC3F7)],
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                const Icon(
+                  Icons.mark_email_read_outlined,
+                  size: 80,
+                  color: Color(0xFF01579B),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Recuperar Acceso',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF01579B),
+                  ),
+                ),
+                const SizedBox(height: 15),
+
+                // Tarjeta con instrucciones y advertencia
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Introduce la dirección de correo electrónico asociada a tu cuenta. Te enviaremos un enlace seguro para restablecer tu contraseña.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.orange.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.orange.shade800,
+                              size: 24,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Por favor, revisa también tu carpeta de Spam o Correo no deseado si no ves el mensaje en tu bandeja principal.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.orange.shade900,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 25),
+
+                      // Input reutilizado
+                      _construirCampoTextoModerno(
+                        controlador: _emailController,
+                        icono: Icons.email_outlined,
+                        etiqueta: 'Correo Electrónico',
+                        tipoTeclado: TextInputType.emailAddress,
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      _isLoading
+                          ? const CircularProgressIndicator()
+                          : SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF01579B),
+                                  foregroundColor: Colors.white,
+                                  elevation: 3,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                ),
+                                onPressed: _enviarCorreoRecuperacion,
+                                child: const Text(
+                                  'Enviar Enlace',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
