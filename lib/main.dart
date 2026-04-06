@@ -61,14 +61,13 @@ class _PaginaBaseState extends State<PaginaBase> {
   final Set<int> _modulosCompletados = {};
   final Set<int> _testsCompletados = {};
 
-  // Nueva variable para controlar la pantalla de carga inicial
   bool _cargandoDatos = true;
 
   @override
   void initState() {
     super.initState();
     _indiceActual = widget.indiceInicial;
-    _cargarProgresoDesdeNube(); // 1. LECTURA: Descargamos datos al iniciar
+    _cargarProgresoDesdeNube();
   }
 
   // =========================================================================
@@ -86,7 +85,6 @@ class _PaginaBaseState extends State<PaginaBase> {
         if (doc.exists) {
           final datos = doc.data()!;
           setState(() {
-            // Transformamos las listas JSON de la nube a nuestros Sets locales
             _modulosCompletados.addAll(
               List<int>.from(datos['modulosCompletados'] ?? []),
             );
@@ -99,7 +97,6 @@ class _PaginaBaseState extends State<PaginaBase> {
         debugPrint("Error al cargar datos: $e");
       }
     }
-    // Quitamos la pantalla de carga sin importar si hubo error o no
     if (mounted) {
       setState(() {
         _cargandoDatos = false;
@@ -113,7 +110,6 @@ class _PaginaBaseState extends State<PaginaBase> {
     });
   }
 
-  // 2. ESCRITURA: Actualizamos la nube al completar un módulo
   void _marcarModuloCompletado(int index) async {
     setState(() {
       _modulosCompletados.add(index);
@@ -128,7 +124,6 @@ class _PaginaBaseState extends State<PaginaBase> {
     }
   }
 
-  // 3. ESCRITURA: Actualizamos la nube al completar un test
   void _marcarTestCompletado(int index) async {
     setState(() {
       _testsCompletados.add(index);
@@ -143,7 +138,6 @@ class _PaginaBaseState extends State<PaginaBase> {
     }
   }
 
-  // (Mantenemos tus getters _pantallas y _fondos exactamente igual)
   List<Widget> get _pantallas => [
     PantallaPrincipal(
       modulosCompletados: _modulosCompletados,
@@ -171,15 +165,79 @@ class _PaginaBaseState extends State<PaginaBase> {
     'assets/images/bg_2.png',
   ];
 
+  // =========================================================================
+  // WIDGETS DEL MENÚ LATERAL (DRAWER)
+  // =========================================================================
+  Widget _construirInsigniaProgreso(String valor, IconData icono) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white24,
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icono, size: 12, color: Colors.white),
+            const SizedBox(width: 2),
+            Text(
+              valor,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _construirElementoMenu({
+    required IconData icono,
+    required String texto,
+    required int indice,
+  }) {
+    final bool seleccionado = _indiceActual == indice;
+    return ListTile(
+      leading: Icon(
+        icono,
+        color: seleccionado
+            ? const Color.fromARGB(255, 13, 71, 161)
+            : Colors.black54,
+      ),
+      title: Text(
+        texto,
+        style: TextStyle(
+          color: seleccionado
+              ? const Color.fromARGB(255, 13, 71, 161)
+              : Colors.black87,
+          fontWeight: seleccionado ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+      selected: seleccionado,
+      selectedTileColor: Colors.blue.withValues(alpha: 0.1),
+      onTap: () {
+        _cambiarPestana(indice);
+        Navigator.pop(context); // Cierra el Drawer
+      },
+    );
+  }
+
+  // =========================================================================
+  // CONSTRUCCIÓN DE LA INTERFAZ
+  // =========================================================================
   @override
   Widget build(BuildContext context) {
-    // Si aún está descargando datos, mostramos una pantalla de carga para evitar desincronización
     if (_cargandoDatos) {
       return const Scaffold(
         backgroundColor: Colors.blueGrey,
         body: Center(child: CircularProgressIndicator(color: Colors.white)),
       );
     }
+
+    final usuarioActual = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -194,18 +252,149 @@ class _PaginaBaseState extends State<PaginaBase> {
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        foregroundColor: const Color.fromARGB(255, 13, 71, 161),
-        actions: [
-          // Botón opcional para cerrar sesión y probar con otros usuarios
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-            },
-          ),
-        ],
+        // Configura el color del icono Hamburguesa generado automáticamente
+        iconTheme: const IconThemeData(color: Color.fromARGB(255, 13, 71, 161)),
       ),
-      // ... EL RESTO DE TU MÉTODO BUILD SE MANTIENE INTACTO (body, bottomNavigationBar, etc.)
+
+      // --- INTEGRACIÓN DEL DRAWER ---
+      drawer: Drawer(
+        child: Column(
+          children: [
+            Expanded(
+              flex: 0,
+              child: StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('usuarios')
+                    .doc(usuarioActual?.uid)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  String nombreCompleto = 'Cargando...';
+                  String email = usuarioActual?.email ?? 'Sin correo';
+
+                  if (snapshot.hasData && snapshot.data!.exists) {
+                    final datos = snapshot.data!.data() as Map<String, dynamic>;
+                    nombreCompleto =
+                        '${datos['nombre'] ?? ''} ${datos['apellidos'] ?? ''}'
+                            .trim();
+                    if (nombreCompleto.isEmpty)
+                      nombreCompleto = 'Estudiante H2';
+                  }
+
+                  return UserAccountsDrawerHeader(
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 13, 71, 161),
+                    ),
+                    accountName: Text(
+                      nombreCompleto,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    accountEmail: Text(email),
+                    currentAccountPicture: const CircleAvatar(
+                      backgroundColor: Colors.white,
+                      child: Icon(
+                        Icons.person,
+                        size: 40,
+                        color: Color.fromARGB(255, 13, 71, 161),
+                      ),
+                    ),
+                    otherAccountsPictures: [
+                      _construirInsigniaProgreso(
+                        _modulosCompletados.length.toString(),
+                        Icons.book,
+                      ),
+                      _construirInsigniaProgreso(
+                        _testsCompletados.length.toString(),
+                        Icons.quiz,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                physics: const BouncingScrollPhysics(),
+                children: [
+                  _construirElementoMenu(
+                    icono: Icons.touch_app_outlined,
+                    texto: 'Inicio',
+                    indice: 0,
+                  ),
+                  _construirElementoMenu(
+                    icono: Icons.library_books_outlined,
+                    texto: 'Módulos Didácticos',
+                    indice: 1,
+                  ),
+                  _construirElementoMenu(
+                    icono: Icons.quiz_outlined,
+                    texto: 'Tests de Evaluación',
+                    indice: 2,
+                  ),
+                  _construirElementoMenu(
+                    icono: Icons.settings_input_antenna_outlined,
+                    texto: 'Monitorización ESP32',
+                    indice: 3,
+                  ),
+                  const Divider(thickness: 1),
+
+                  // Opciones Secundarias (Push Navigation)
+                  ListTile(
+                    leading: const Icon(
+                      Icons.person_outline,
+                      color: Colors.black54,
+                    ),
+                    title: const Text('Mi Perfil'),
+                    onTap: () {
+                      Navigator.pop(context); // Cierra Drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PantallaPerfil(),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.settings_outlined,
+                      color: Colors.black54,
+                    ),
+                    title: const Text('Ajustes'),
+                    onTap: () {
+                      Navigator.pop(context); // Cierra Drawer
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PantallaAjustes(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const Divider(thickness: 1),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.redAccent),
+              title: const Text(
+                'Cerrar Sesión',
+                style: TextStyle(color: Colors.redAccent),
+              ),
+              onTap: () async {
+                Navigator.pop(context);
+                await FirebaseAuth.instance.signOut();
+              },
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+
+      // --- CUERPO PRINCIPAL ---
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
         transitionBuilder: (Widget child, Animation<double> animation) {
@@ -225,7 +414,8 @@ class _PaginaBaseState extends State<PaginaBase> {
           child: _pantallas[_indiceActual],
         ),
       ),
-      // ... (bottomNavigationBar sigue igual)
+
+      // --- NAVEGACIÓN INFERIOR ---
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -343,7 +533,7 @@ class PantallaPrincipal extends StatelessWidget {
           ),
           const SizedBox(height: 15),
 
-          // CARRUSEL TEORÍA (Lee directamente de modulosHidrogenoGlobal)
+          // CARRUSEL TEORÍA
           SizedBox(
             height: altoCarrusel,
             child: ListView.builder(
@@ -381,7 +571,7 @@ class PantallaPrincipal extends StatelessWidget {
           ),
           const SizedBox(height: 15),
 
-          // CARRUSEL TESTS (Lee directamente de testsHidrogeno)
+          // CARRUSEL TESTS
           SizedBox(
             height: altoCarrusel,
             child: ListView.builder(
@@ -421,8 +611,6 @@ class PantallaPrincipal extends StatelessWidget {
     int index,
   ) {
     final bool estaCompletado = modulosCompletados.contains(index);
-
-    // Extrae la imagen del diccionario (si no existe, usa string vacío)
     final String urlImagen = modulo['imagen'] ?? '';
 
     return _plantillaBurbujaUI(
@@ -452,27 +640,20 @@ class PantallaPrincipal extends StatelessWidget {
     int index,
   ) {
     final bool estaCompletado = testsCompletados.contains(index);
-
-    // Lógica secuencial: bloqueado si no es el primero y el anterior no está aprobado
     final bool estaBloqueado =
         index > 0 && !testsCompletados.contains(index - 1);
-
-    // Extrae la imagen original de la clase para no perder la estética
     final String urlImagen = modulo.imagen;
 
-    // Envolvemos la plantilla en Opacity para aplicar el "filtro" visual de bloqueo
     return Opacity(
       opacity: estaBloqueado ? 0.6 : 1.0,
       child: _plantillaBurbujaUI(
         titulo: modulo.titulo,
-        // Si está bloqueado, mostramos el candado; si no, el icono de la temática
         icono: estaBloqueado ? Icons.lock : modulo.icono,
-        color: modulo.color, // Mantenemos su color base original
+        color: modulo.color,
         estaCompletado: estaCompletado,
-        urlImagen: urlImagen, // Mantenemos su imagen de fondo original
+        urlImagen: urlImagen,
         onTap: estaBloqueado
             ? () {
-                // Interceptamos el toque si está bloqueado para mostrar el aviso
                 ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -489,7 +670,6 @@ class PantallaPrincipal extends StatelessWidget {
                 );
               }
             : () async {
-                // Flujo normal de ejecución si está desbloqueado
                 final bool? aprobado = await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -559,9 +739,6 @@ class PantallaPrincipal extends StatelessWidget {
     );
   }
 
-  // =========================================================================
-  // PLANTILLA MAESTRA: MANEJO DINÁMICO DE IMÁGENES Y COLORES
-  // =========================================================================
   Widget _plantillaBurbujaUI({
     required String titulo,
     required IconData icono,
@@ -575,7 +752,6 @@ class PantallaPrincipal extends StatelessWidget {
       borderRadius: BorderRadius.circular(30),
       child: Container(
         decoration: BoxDecoration(
-          // FALLBACK: Si no hay imagen, usa el color del módulo
           color: urlImagen.isEmpty ? color.withValues(alpha: 0.8) : null,
           borderRadius: BorderRadius.circular(30),
           border: estaCompletado
@@ -590,16 +766,14 @@ class PantallaPrincipal extends StatelessWidget {
               offset: const Offset(0, 8),
             ),
           ],
-          // CARGA DE IMAGEN: Si el string tiene texto, carga la imagen
           image: urlImagen.isNotEmpty
               ? DecorationImage(
-                  // Permite URLs web o Assets locales según empiece el texto
                   image: urlImagen.startsWith('http')
                       ? NetworkImage(urlImagen) as ImageProvider
                       : AssetImage(urlImagen),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
-                    Colors.black.withValues(alpha: 0.3), // Oscurece la imagen
+                    Colors.black.withValues(alpha: 0.3),
                     BlendMode.darken,
                   ),
                 )
@@ -607,7 +781,6 @@ class PantallaPrincipal extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // DEGRADADO OSCURO INFERIOR PARA TEXTO
             Positioned(
               bottom: 0,
               left: 0,
@@ -630,8 +803,6 @@ class PantallaPrincipal extends StatelessWidget {
                 ),
               ),
             ),
-
-            // ICONO SUPERIOR
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: Row(
@@ -668,8 +839,6 @@ class PantallaPrincipal extends StatelessWidget {
                 ],
               ),
             ),
-
-            // TEXTO INFERIOR
             Align(
               alignment: Alignment.bottomLeft,
               child: Padding(
@@ -696,6 +865,37 @@ class PantallaPrincipal extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// =========================================================================
+// PANTALLAS SECUNDARIAS (PLACEHOLDERS)
+// =========================================================================
+class PantallaPerfil extends StatelessWidget {
+  const PantallaPerfil({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Mi Perfil')),
+      body: const Center(
+        child: Text('En construcción: Edición de Perfil de Usuario'),
+      ),
+    );
+  }
+}
+
+class PantallaAjustes extends StatelessWidget {
+  const PantallaAjustes({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Ajustes')),
+      body: const Center(
+        child: Text('En construcción: Configuración y Preferencias'),
       ),
     );
   }
