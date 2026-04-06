@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui'; // Necesario para ImageFilter.blur
 
 import 'package:firebase_core/firebase_core.dart'; //base de datos
 import 'firebase_options.dart';
@@ -166,30 +167,29 @@ class _PaginaBaseState extends State<PaginaBase> {
   ];
 
   // =========================================================================
-  // WIDGETS DEL MENÚ LATERAL (DRAWER)
+  // WIDGETS DEL MENÚ LATERAL (DRAWER) - REDISEÑO MODERNO
   // =========================================================================
   Widget _construirInsigniaProgreso(String valor, IconData icono) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white24,
-        shape: BoxShape.circle,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(15),
       ),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icono, size: 12, color: Colors.white),
-            const SizedBox(width: 2),
-            Text(
-              valor,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icono, size: 14, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            valor,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -200,28 +200,49 @@ class _PaginaBaseState extends State<PaginaBase> {
     required int indice,
   }) {
     final bool seleccionado = _indiceActual == indice;
-    return ListTile(
-      leading: Icon(
-        icono,
+    // DISEÑO DE BURBUJA/PÍLDORA CON ALTO CONTRASTE BLANCO
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
         color: seleccionado
-            ? const Color.fromARGB(255, 13, 71, 161)
-            : Colors.black54,
+            ? Colors
+                  .white // Blanco puro y sólido si está seleccionado
+            : Colors.white.withValues(
+                alpha: 0.7,
+              ), // Blanco translúcido si no está seleccionado
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: seleccionado
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [],
       ),
-      title: Text(
-        texto,
-        style: TextStyle(
+      child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        leading: Icon(
+          icono,
           color: seleccionado
               ? const Color.fromARGB(255, 13, 71, 161)
               : Colors.black87,
-          fontWeight: seleccionado ? FontWeight.bold : FontWeight.normal,
         ),
+        title: Text(
+          texto,
+          style: TextStyle(
+            color: seleccionado
+                ? const Color.fromARGB(255, 13, 71, 161)
+                : Colors.black87,
+            fontWeight: seleccionado ? FontWeight.w900 : FontWeight.w600,
+          ),
+        ),
+        onTap: () {
+          _cambiarPestana(indice);
+          Navigator.pop(context); // Cierra el Drawer
+        },
       ),
-      selected: seleccionado,
-      selectedTileColor: Colors.blue.withValues(alpha: 0.1),
-      onTap: () {
-        _cambiarPestana(indice);
-        Navigator.pop(context); // Cierra el Drawer
-      },
     );
   }
 
@@ -240,6 +261,7 @@ class _PaginaBaseState extends State<PaginaBase> {
     final usuarioActual = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
+      drawerScrimColor: Colors.black.withValues(alpha: 0.3),
       extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
@@ -252,148 +274,299 @@ class _PaginaBaseState extends State<PaginaBase> {
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
-        // Configura el color del icono Hamburguesa generado automáticamente
         iconTheme: const IconThemeData(color: Color.fromARGB(255, 13, 71, 161)),
       ),
 
-      // --- INTEGRACIÓN DEL DRAWER ---
+      // --- DRAWER MODERNIZADO (GLASSMORPHISM) ---
+      // --- DRAWER MODERNIZADO (GLASSMORPHISM CORREGIDO) ---
       drawer: Drawer(
-        child: Column(
-          children: [
-            Expanded(
-              flex: 0,
-              child: StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('usuarios')
-                    .doc(usuarioActual?.uid)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  String nombreCompleto = 'Cargando...';
-                  String email = usuarioActual?.email ?? 'Sin correo';
-
-                  if (snapshot.hasData && snapshot.data!.exists) {
-                    final datos = snapshot.data!.data() as Map<String, dynamic>;
-                    nombreCompleto =
-                        '${datos['nombre'] ?? ''} ${datos['apellidos'] ?? ''}'
-                            .trim();
-                    if (nombreCompleto.isEmpty)
-                      nombreCompleto = 'Estudiante H2';
-                  }
-
-                  return UserAccountsDrawerHeader(
-                    decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 13, 71, 161),
-                    ),
-                    accountName: Text(
-                      nombreCompleto,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                    ),
-                    accountEmail: Text(email),
-                    currentAccountPicture: const CircleAvatar(
-                      backgroundColor: Colors.white,
-                      child: Icon(
-                        Icons.person,
-                        size: 40,
-                        color: Color.fromARGB(255, 13, 71, 161),
-                      ),
-                    ),
-                    otherAccountsPictures: [
-                      _construirInsigniaProgreso(
-                        _modulosCompletados.length.toString(),
-                        Icons.book,
-                      ),
-                      _construirInsigniaProgreso(
-                        _testsCompletados.length.toString(),
-                        Icons.quiz,
-                      ),
-                    ],
-                  );
-                },
+        backgroundColor: Colors.transparent, // Fundamental para el cristal
+        elevation: 0,
+        width: MediaQuery.of(context).size.width * 0.85,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topRight: Radius.circular(40),
+            bottomRight: Radius.circular(40),
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: 15,
+              sigmaY: 15,
+            ), // Desenfoque activo
+            child: Container(
+              decoration: BoxDecoration(
+                // 1. CORRECCIÓN TRANSPARENCIA: Bajamos el alpha de 0.85 a 0.3
+                color: Colors.white.withValues(alpha: 0.3),
+                // Borde sutil casi invisible para dar efecto de "corte" en el cristal
+                border: Border(
+                  right: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1.0,
+                  ),
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _construirElementoMenu(
-                    icono: Icons.touch_app_outlined,
-                    texto: 'Inicio',
-                    indice: 0,
-                  ),
-                  _construirElementoMenu(
-                    icono: Icons.library_books_outlined,
-                    texto: 'Módulos Didácticos',
-                    indice: 1,
-                  ),
-                  _construirElementoMenu(
-                    icono: Icons.quiz_outlined,
-                    texto: 'Tests de Evaluación',
-                    indice: 2,
-                  ),
-                  _construirElementoMenu(
-                    icono: Icons.settings_input_antenna_outlined,
-                    texto: 'Monitorización ESP32',
-                    indice: 3,
-                  ),
-                  const Divider(thickness: 1),
+                  // CABECERA PERSONALIZADA REDONDEADA
+                  StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('usuarios')
+                        .doc(usuarioActual?.uid)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      String nombreCompleto = 'Cargando...';
+                      String email = usuarioActual?.email ?? 'Sin correo';
 
-                  // Opciones Secundarias (Push Navigation)
-                  ListTile(
-                    leading: const Icon(
-                      Icons.person_outline,
-                      color: Colors.black54,
-                    ),
-                    title: const Text('Mi Perfil'),
-                    onTap: () {
-                      Navigator.pop(context); // Cierra Drawer
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const PantallaPerfil(),
+                      if (snapshot.hasData && snapshot.data!.exists) {
+                        final datos =
+                            snapshot.data!.data() as Map<String, dynamic>;
+                        nombreCompleto =
+                            '${datos['nombre'] ?? ''} ${datos['apellidos'] ?? ''}'
+                                .trim();
+                        if (nombreCompleto.isEmpty) {
+                          nombreCompleto = 'Estudiante H2';
+                        }
+                      }
+
+                      return Container(
+                        padding: const EdgeInsets.only(
+                          top: 60,
+                          left: 24,
+                          right: 24,
+                          bottom: 24,
+                        ),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color.fromARGB(255, 13, 71, 161),
+                              Color(0xFF4FC3F7),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          // 2. CORRECCIÓN LÍNEA BLANCA: Añadimos el topRight al radio
+                          borderRadius: BorderRadius.only(
+                            topRight: Radius.circular(
+                              40,
+                            ), // Alineado con el padre
+                            bottomRight: Radius.circular(40),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Color(0xFFE1F5FE),
+                                child: Icon(
+                                  Icons.person,
+                                  size: 35,
+                                  color: Color.fromARGB(255, 13, 71, 161),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            Text(
+                              nombreCompleto,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              email,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            Row(
+                              children: [
+                                _construirInsigniaProgreso(
+                                  _modulosCompletados.length.toString(),
+                                  Icons.menu_book_rounded,
+                                ),
+                                const SizedBox(width: 10),
+                                _construirInsigniaProgreso(
+                                  _testsCompletados.length.toString(),
+                                  Icons.fact_check_outlined,
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       );
                     },
                   ),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.settings_outlined,
-                      color: Colors.black54,
-                    ),
-                    title: const Text('Ajustes'),
-                    onTap: () {
-                      Navigator.pop(context); // Cierra Drawer
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const PantallaAjustes(),
+                  const SizedBox(height: 10),
+
+                  // OPCIONES DEL MENÚ
+                  // ==========================================================
+                  // REEMPLAZA DESDE AQUÍ:
+                  // ==========================================================
+                  Expanded(
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      physics: const BouncingScrollPhysics(),
+                      children: [
+                        _construirElementoMenu(
+                          icono: Icons.touch_app_outlined,
+                          texto: 'Inicio',
+                          indice: 0,
                         ),
-                      );
-                    },
+                        _construirElementoMenu(
+                          icono: Icons.library_books_outlined,
+                          texto: 'Módulos Didácticos',
+                          indice: 1,
+                        ),
+                        _construirElementoMenu(
+                          icono: Icons.quiz_outlined,
+                          texto: 'Tests de Evaluación',
+                          indice: 2,
+                        ),
+                        _construirElementoMenu(
+                          icono: Icons.settings_input_antenna_outlined,
+                          texto: 'Monitorización ESP32',
+                          indice: 3,
+                        ),
+
+                        // Divisor visual
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 10,
+                          ),
+                          child: Divider(
+                            color: Colors.black.withValues(alpha: 0.1),
+                          ),
+                        ),
+
+                        // Opciones Secundarias (Con fondo blanco para resaltar)
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: ListTile(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            leading: const Icon(
+                              Icons.person_outline,
+                              color: Colors.black87,
+                            ),
+                            title: const Text(
+                              'Mi Perfil',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const PantallaPerfil(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: ListTile(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            leading: const Icon(
+                              Icons.settings_outlined,
+                              color: Colors.black87,
+                            ),
+                            title: const Text(
+                              'Ajustes',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const PantallaAjustes(),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // BOTÓN CERRAR SESIÓN (Alto contraste)
+                  Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.redAccent.withValues(alpha: 0.3),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: ListTile(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      leading: const Icon(
+                        Icons.logout,
+                        color: Colors.redAccent,
+                      ),
+                      title: const Text(
+                        'Cerrar Sesión',
+                        style: TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onTap: () async {
+                        Navigator.pop(context);
+                        await FirebaseAuth.instance.signOut();
+                      },
+                    ),
                   ),
                 ],
               ),
             ),
-            const Divider(thickness: 1),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.redAccent),
-              title: const Text(
-                'Cerrar Sesión',
-                style: TextStyle(color: Colors.redAccent),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-                await FirebaseAuth.instance.signOut();
-              },
-            ),
-            const SizedBox(height: 20),
-          ],
+          ),
         ),
       ),
-
       // --- CUERPO PRINCIPAL ---
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
