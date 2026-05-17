@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 // =========================================================================
 // 1. BASE DE DATOS GLOBAL DE CONTENIDOS (ACCESIBLE DESDE MAIN)
 // =========================================================================
 final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
   {
-    'titulo': 'Electrólisis',
+    'titulo': 'Fundamentos del Hidrógeno',
     'icono': Icons.water_drop,
     'color': Colors.blueAccent,
     'imagen': 'assets/home_images/electrolisis_home.png',
+    'es_imagen': true,
     'diapositivas': [
-      'La electrólisis es el proceso electroquímico mediante el cual se utiliza energía eléctrica para dividir la molécula de agua (H₂O) en sus gases constituyentes: Hidrógeno (H₂) y Oxígeno (O₂).',
-      'El proceso global se rige por la siguiente ecuación termodinámica:\n\n2H₂O(l) + Energía Eléctrica → 2H₂(g) + O₂(g)',
-      'En un electrolizador PEM (Membrana de Intercambio Protónico), el agua reacciona en el ánodo para formar oxígeno, electrones y protones con carga positiva (H+).',
-      'Los protones fluyen a través de la membrana polimérica hacia el cátodo, donde se combinan con los electrones del circuito externo para formar gas hidrógeno (H₂) de alta pureza.',
+      'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/1_resultado.webp',
+      'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/2_resultado.webp',
+      'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/3_resultado.webp',
+      'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/4_resultado.webp',
+      'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/5_resultado.webp',
+      'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/6_resultado.webp',
     ],
   },
   {
@@ -21,6 +25,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'icono': Icons.battery_charging_full,
     'color': Colors.green,
     'imagen': 'assets/home_images/toyotamirai.png',
+    'es_imagen': false,
     'diapositivas': [
       'Una pila de combustible es un dispositivo electroquímico que realiza el proceso inverso a la electrólisis: convierte la energía química del hidrógeno directamente en energía eléctrica limpia.',
       'A diferencia de una batería convencional, no se agota ni necesita recarga. Funciona de manera continua mientras se le suministre combustible (H₂) en el ánodo y un oxidante (O₂ del aire) en el cátodo.',
@@ -32,6 +37,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'icono': Icons.storage,
     'color': Colors.orange,
     'imagen': 'assets/home_images/almacenamiento-de-hidrogeno.png',
+    'es_imagen': false,
     'diapositivas': [
       'El hidrógeno es el elemento más ligero y menos denso del universo. Almacenarlo de forma compacta es uno de los mayores retos de la ingeniería actual.',
       'Método 1: Compresión Gaseosa.\nSe almacena a altas presiones, típicamente a 350 o 700 bares, utilizando tanques reforzados con fibra de carbono (Tipo IV).',
@@ -44,6 +50,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'icono': Icons.rocket_launch,
     'color': Colors.purple,
     'imagen': 'assets/home_images/airbus_hydro.png',
+    'es_imagen': false,
     'diapositivas': [
       'Movilidad Pesada:\nEl hidrógeno es ideal para camiones, trenes y barcos, donde las baterías de litio son demasiado pesadas o tardan mucho en recargarse.',
       'Industria Intensiva:\nSustitución del gas natural en procesos que requieren altas temperaturas (acero, cemento) o como materia prima química (fertilizantes).',
@@ -54,6 +61,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'icono': Icons.science,
     'color': Colors.teal,
     'imagen': 'assets/home_images/electrolisis_home.png',
+    'es_imagen': false,
     'diapositivas': [
       'Propiedades Físicas:\nGas incoloro, inodoro, insípido y altamente inflamable. Su densidad energética por masa es excelente (120 MJ/kg), casi el triple que la gasolina.',
     ],
@@ -62,6 +70,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'titulo': 'Transporte',
     'icono': Icons.local_shipping,
     'color': Colors.indigo,
+    'es_imagen': false,
     'diapositivas': [
       'Hidroductos:\nAdaptación de la red actual de gas natural o construcción de nuevas tuberías dedicadas exclusivamente al transporte de hidrógeno.',
       'Portadores Químicos (LOHC):\nTransporte del hidrógeno enlazado a otras moléculas como el amoníaco (NH₃) o líquidos orgánicos para facilitar su logística en barcos.',
@@ -72,6 +81,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'icono': Icons.security,
     'color': Colors.redAccent,
     'imagen': 'assets/home_images/electrolisis_home.png',
+    'es_imagen': false,
     'diapositivas': [
       'Al ser tan ligero, en caso de fuga el hidrógeno se disipa rápidamente hacia la atmósfera, reduciendo el riesgo de explosión a nivel del suelo comparado con el GLP o la gasolina.',
       'Requiere sensores específicos (como los que implementarás en tu ESP32) ya que las llamas de hidrógeno son casi invisibles a la luz del día.',
@@ -82,6 +92,7 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
     'icono': Icons.eco,
     'color': Colors.lightGreen,
     'imagen': 'assets/home_images/electrolisis_home.png',
+    'es_imagen': false,
     'diapositivas': [
       'La "Gama de Colores" del hidrógeno clasifica su origen según las emisiones de su producción.',
       'Gris: A partir de gas natural (con emisiones de CO₂).\nAzul: Gas natural con captura de CO₂.\nVerde: Electrólisis con energías renovables (Cero emisiones).',
@@ -93,7 +104,6 @@ final List<Map<String, dynamic>> modulosHidrogenoGlobal = [
 // PANTALLA DE CONTENIDOS PRINCIPAL (STATELESSWIDGET)
 // =========================================================================
 class PantallaContenidos extends StatelessWidget {
-  // Parámetros recibidos desde PaginaBase (main.dart) para sincronizar el estado
   final Set<int> modulosCompletados;
   final Function(int) onModuloCompletado;
 
@@ -105,16 +115,13 @@ class PantallaContenidos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Cálculo de la fracción de completado para la barra
     final double progreso =
         modulosCompletados.length / modulosHidrogenoGlobal.length;
 
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage(
-            'assets/tu_imagen.png',
-          ), // Sustituye por la ruta exacta
+          image: AssetImage('assets/tu_imagen.png'),
           fit: BoxFit.cover,
         ),
       ),
@@ -152,7 +159,7 @@ class PantallaContenidos extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // BARRA DE PROGRESO MINIMALISTA
+                // BARRA DE PROGRESO
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -248,13 +255,12 @@ class PantallaContenidos extends StatelessWidget {
     );
   }
 
-  // Tarjeta de cada módulo (Estilo Burbuja)
+  // Tarjeta de cada módulo
   Widget _construirCarpetaModulo(
     BuildContext context,
     Map<String, dynamic> modulo,
     int index,
   ) {
-    // Verificamos el estado a través de la variable pasada por el constructor
     bool estaCompletado = modulosCompletados.contains(index);
 
     return InkWell(
@@ -267,7 +273,6 @@ class PantallaContenidos extends StatelessWidget {
         );
 
         if (resultado == true) {
-          // Ejecutamos la función proporcionada por el padre para actualizar el estado global
           onModuloCompletado(index);
         }
       },
@@ -310,9 +315,7 @@ class PantallaContenidos extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(15),
               decoration: BoxDecoration(
-                color: modulo['color'].withValues(
-                  alpha: 0.2,
-                ), // Sustituido withOpacity por withValues para Flutter 3+
+                color: modulo['color'].withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(modulo['icono'], size: 40, color: modulo['color']),
@@ -338,7 +341,7 @@ class PantallaContenidos extends StatelessWidget {
 }
 
 // =========================================================================
-// PANTALLA TIPO HISTORIA (MICROLEARNING UI)
+// PANTALLA TIPO HISTORIA (MICROLEARNING UI) - REFACTORIZADA CON PAGEVIEW
 // =========================================================================
 class PantallaHistoriaTeoria extends StatefulWidget {
   final Map<String, dynamic> datosModulo;
@@ -352,30 +355,40 @@ class PantallaHistoriaTeoria extends StatefulWidget {
 class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
   int _indiceActual = 0;
   late List<String> _diapositivas;
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
     _diapositivas =
         widget.datosModulo['diapositivas'] ?? ['Contenido no disponible'];
+    _pageController = PageController(initialPage: 0);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _siguienteDiapositiva() {
-    setState(() {
-      if (_indiceActual < _diapositivas.length - 1) {
-        _indiceActual++;
-      } else {
-        Navigator.pop(context, true);
-      }
-    });
+    if (_indiceActual < _diapositivas.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOutCubic,
+      );
+    } else {
+      Navigator.pop(context, true);
+    }
   }
 
   void _anteriorDiapositiva() {
-    setState(() {
-      if (_indiceActual > 0) {
-        _indiceActual--;
-      }
-    });
+    if (_indiceActual > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOutCubic,
+      );
+    }
   }
 
   @override
@@ -387,6 +400,7 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
       body: SafeArea(
         child: Stack(
           children: [
+            // 1. FONDO DEGRADADO (Solo visible si es texto o mientras carga la imagen)
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -400,53 +414,88 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 30.0,
-                vertical: 80.0,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    widget.datosModulo['icono'],
-                    size: 80,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    widget.datosModulo['titulo'],
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+
+            // 2. CARRUSEL DE CONTENIDO (PAGEVIEW)
+            PageView.builder(
+              controller: _pageController,
+              physics: const BouncingScrollPhysics(),
+              onPageChanged: (index) {
+                setState(() {
+                  _indiceActual = index;
+                });
+              },
+              itemCount: _diapositivas.length,
+              itemBuilder: (context, index) {
+                final bool esMultimedia =
+                    widget.datosModulo['es_imagen'] == true;
+
+                if (esMultimedia) {
+                  // MODO IMAGEN: Pantalla completa sin padding
+                  return CachedNetworkImage(
+                    imageUrl: _diapositivas[index],
+                    fit: BoxFit
+                        .cover, // Expande la imagen cubriendo toda la pantalla
+                    fadeInDuration: const Duration(milliseconds: 300),
+                    placeholder: (context, url) => Center(
+                      child: CircularProgressIndicator(color: colorPrincipal),
                     ),
-                  ),
-                  const SizedBox(height: 50),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 400),
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: child,
-                          );
-                        },
-                    child: Text(
-                      _diapositivas[_indiceActual],
-                      key: ValueKey<int>(_indiceActual),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        color: Colors.white,
-                        height: 1.5,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    errorWidget: (context, url, error) => const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.cloud_off, color: Colors.white54, size: 50),
+                        SizedBox(height: 10),
+                        Text(
+                          'Conexión requerida para descargar el módulo',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white54),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
+                  );
+                } else {
+                  // MODO TEXTO: Diseño original con Padding, Icono y Textos
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 30.0,
+                      vertical: 80.0,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          widget.datosModulo['icono'],
+                          size: 80,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          widget.datosModulo['titulo'],
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 50),
+                        Text(
+                          _diapositivas[index],
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            color: Colors.white,
+                            height: 1.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
             ),
+
+            // 3. CAPA DE GESTOS TÁCTILES
             Positioned.fill(
               child: Row(
                 children: [
@@ -467,6 +516,8 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
                 ],
               ),
             ),
+
+            // 4. BARRA DE PROGRESO Y BOTÓN DE CIERRE (Superpuestos a la imagen)
             Positioned(
               top: 15,
               left: 15,
@@ -476,7 +527,8 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
                   Row(
                     children: _diapositivas.asMap().entries.map((entry) {
                       return Expanded(
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
                           margin: const EdgeInsets.symmetric(horizontal: 3.0),
                           height: 5.0,
                           decoration: BoxDecoration(
@@ -497,6 +549,10 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
                         Icons.close,
                         color: Colors.white,
                         size: 32,
+                        // Añadimos una pequeña sombra para que se vea bien incluso si el fondo es blanco
+                        shadows: [
+                          Shadow(color: Colors.black45, blurRadius: 10),
+                        ],
                       ),
                       onPressed: () => Navigator.pop(context),
                     ),

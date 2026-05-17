@@ -277,7 +277,6 @@ class _PaginaBaseState extends State<PaginaBase> {
         iconTheme: const IconThemeData(color: Color.fromARGB(255, 13, 71, 161)),
       ),
 
-      // --- DRAWER MODERNIZADO (GLASSMORPHISM) ---
       // --- DRAWER MODERNIZADO (GLASSMORPHISM CORREGIDO) ---
       drawer: Drawer(
         backgroundColor: Colors.transparent, // Fundamental para el cristal
