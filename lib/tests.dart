@@ -131,10 +131,10 @@ final List<ModuloTest> testsHidrogeno = [
       Pregunta(
         texto: '¿Cuál es la función del hidrógeno en el sol?',
         opciones: [
-          'Fusionarse con el helio para liberar energía.',
+          'Fusionarse con el helio para liberar energía',
           'Refrigerar el núcleo',
           'Sintetizar elementos pesados',
-          'Mantener la estructura.',
+          'Mantener la estructura',
         ],
         indiceCorrecto: 0,
         explicacion:
@@ -399,8 +399,7 @@ final List<ModuloTest> testsHidrogeno = [
       ),
 
       Pregunta(
-        texto:
-            '¿A qué presión se comprime el hidrógeno en el Toyota Mirai? [cite: 337, 338]',
+        texto: '¿A qué presión se comprime el hidrógeno en el Toyota Mirai?',
         opciones: [
           'Apenas unos 10 bares',
           'Alrededor de 700 bares',
@@ -592,7 +591,7 @@ final List<ModuloTest> testsHidrogeno = [
         ],
         indiceCorrecto: 0,
         explicacion:
-            'Los e-Fuels requeridos para los combustibles SAF se fabrican combinando directamente hidrógeno renovable con dióxido de carbono capturado[cite: 545].',
+            'Los e-Fuels requeridos para los combustibles SAF se fabrican combinando directamente hidrógeno renovable con dióxido de carbono capturado.',
       ),
       Pregunta(
         texto: '¿Cómo se pueden abaratar costes de hidrogeneras para camiones?',
@@ -602,9 +601,9 @@ final List<ModuloTest> testsHidrogeno = [
           'Reduciendo el tamaño de los tanques',
           'Colocándolas estratégicamente en rutas preestablecidas',
         ],
-        indiceCorrecto: 1,
+        indiceCorrecto: 3,
         explicacion:
-            'Ubicar la infraestructura de repostaje de forma estratégica en rutas logísticas comerciales ya fijadas ayuda a reducir de manera directa los costes iniciales[cite: 517, 518].',
+            'Ubicar la infraestructura de repostaje de forma estratégica en rutas logísticas comerciales ya fijadas ayuda a reducir de manera directa los costes iniciales.',
       ),
     ],
   ),
