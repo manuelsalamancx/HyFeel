@@ -5,11 +5,21 @@ import 'package:firebase_core/firebase_core.dart'; //base de datos
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'contents.dart';
 import 'tests.dart'; //pantallas
 import 'connect.dart';
 import 'auth.dart';
+import 'terminos.dart';
+import 'notificaciones.dart';
+
+// =========================================================================
+// GENERACIÓN DE LISTA PLANA PARA LOS CARRUSELES DE LA PANTALLA PRINCIPAL
+// =========================================================================
+final List<Map<String, dynamic>> modulosHidrogenoGlobal = partesContenidoGlobal
+    .expand((parte) => parte['modulos'] as List<Map<String, dynamic>>)
+    .toList();
 
 // =========================================================================
 // PUNTO DE ENTRADA PRINCIPAL
@@ -200,16 +210,12 @@ class _PaginaBaseState extends State<PaginaBase> {
     required int indice,
   }) {
     final bool seleccionado = _indiceActual == indice;
-    // DISEÑO DE BURBUJA/PÍLDORA CON ALTO CONTRASTE BLANCO
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: seleccionado
-            ? Colors
-                  .white // Blanco puro y sólido si está seleccionado
-            : Colors.white.withValues(
-                alpha: 0.7,
-              ), // Blanco translúcido si no está seleccionado
+            ? Colors.white
+            : Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(20),
         boxShadow: seleccionado
             ? [
@@ -240,15 +246,12 @@ class _PaginaBaseState extends State<PaginaBase> {
         ),
         onTap: () {
           _cambiarPestana(indice);
-          Navigator.pop(context); // Cierra el Drawer
+          Navigator.pop(context);
         },
       ),
     );
   }
 
-  // =========================================================================
-  // CONSTRUCCIÓN DE LA INTERFAZ
-  // =========================================================================
   @override
   Widget build(BuildContext context) {
     if (_cargandoDatos) {
@@ -277,9 +280,8 @@ class _PaginaBaseState extends State<PaginaBase> {
         iconTheme: const IconThemeData(color: Color.fromARGB(255, 13, 71, 161)),
       ),
 
-      // --- DRAWER MODERNIZADO (GLASSMORPHISM CORREGIDO) ---
       drawer: Drawer(
-        backgroundColor: Colors.transparent, // Fundamental para el cristal
+        backgroundColor: Colors.transparent,
         elevation: 0,
         width: MediaQuery.of(context).size.width * 0.85,
         child: ClipRRect(
@@ -288,15 +290,10 @@ class _PaginaBaseState extends State<PaginaBase> {
             bottomRight: Radius.circular(40),
           ),
           child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: 15,
-              sigmaY: 15,
-            ), // Desenfoque activo
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: Container(
               decoration: BoxDecoration(
-                // 1. CORRECCIÓN TRANSPARENCIA: Bajamos el alpha de 0.85 a 0.3
                 color: Colors.white.withValues(alpha: 0.3),
-                // Borde sutil casi invisible para dar efecto de "corte" en el cristal
                 border: Border(
                   right: BorderSide(
                     color: Colors.white.withValues(alpha: 0.2),
@@ -307,7 +304,6 @@ class _PaginaBaseState extends State<PaginaBase> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // CABECERA PERSONALIZADA REDONDEADA
                   StreamBuilder<DocumentSnapshot>(
                     stream: FirebaseFirestore.instance
                         .collection('usuarios')
@@ -344,11 +340,8 @@ class _PaginaBaseState extends State<PaginaBase> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          // 2. CORRECCIÓN LÍNEA BLANCA: Añadimos el topRight al radio
                           borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(
-                              40,
-                            ), // Alineado con el padre
+                            topRight: Radius.circular(40),
                             bottomRight: Radius.circular(40),
                           ),
                         ),
@@ -409,10 +402,6 @@ class _PaginaBaseState extends State<PaginaBase> {
                   ),
                   const SizedBox(height: 10),
 
-                  // OPCIONES DEL MENÚ
-                  // ==========================================================
-                  // REEMPLAZA DESDE AQUÍ:
-                  // ==========================================================
                   Expanded(
                     child: ListView(
                       padding: EdgeInsets.zero,
@@ -439,7 +428,6 @@ class _PaginaBaseState extends State<PaginaBase> {
                           indice: 3,
                         ),
 
-                        // Divisor visual
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 24,
@@ -450,7 +438,6 @@ class _PaginaBaseState extends State<PaginaBase> {
                           ),
                         ),
 
-                        // Opciones Secundarias (Con fondo blanco para resaltar)
                         Container(
                           margin: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -525,7 +512,6 @@ class _PaginaBaseState extends State<PaginaBase> {
                     ),
                   ),
 
-                  // BOTÓN CERRAR SESIÓN (Alto contraste)
                   Container(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -566,7 +552,7 @@ class _PaginaBaseState extends State<PaginaBase> {
           ),
         ),
       ),
-      // --- CUERPO PRINCIPAL ---
+
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
         transitionBuilder: (Widget child, Animation<double> animation) {
@@ -587,7 +573,6 @@ class _PaginaBaseState extends State<PaginaBase> {
         ),
       ),
 
-      // --- NAVEGACIÓN INFERIOR ---
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -694,7 +679,6 @@ class PantallaPrincipal extends StatelessWidget {
           ),
           const SizedBox(height: 30),
 
-          // CABECERA TEORÍA
           const Text(
             "Módulos Teóricos",
             style: TextStyle(
@@ -705,22 +689,24 @@ class PantallaPrincipal extends StatelessWidget {
           ),
           const SizedBox(height: 15),
 
-          // CARRUSEL TEORÍA
+          // CARRUSEL TEORÍA (CORREGIDO PARA LEER LA LISTA PLANA)
           SizedBox(
             height: altoCarrusel,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              itemCount: 5,
+              itemCount: modulosHidrogenoGlobal.length > 4
+                  ? 5
+                  : modulosHidrogenoGlobal.length + 1,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.only(right: 18.0, bottom: 15.0),
                   child: SizedBox(
                     width: anchoBurbuja,
-                    child: index < 4
+                    child: index < 4 && index < modulosHidrogenoGlobal.length
                         ? _construirBurbujaTeoria(
                             context,
-                            modulosHidrogenoGlobal[index],
+                            modulosHidrogenoGlobal[index], // <-- Extrae el módulo mapeado correctamente
                             index,
                           )
                         : _construirBurbujaVerMas(onIrAContenidos, Colors.blue),
@@ -732,7 +718,6 @@ class PantallaPrincipal extends StatelessWidget {
 
           const SizedBox(height: 35),
 
-          // CABECERA TESTS
           const Text(
             "Evaluación Continua",
             style: TextStyle(
@@ -782,13 +767,14 @@ class PantallaPrincipal extends StatelessWidget {
     Map<String, dynamic> modulo,
     int index,
   ) {
-    final bool estaCompletado = modulosCompletados.contains(index);
+    final int idModulo = modulo['id'] ?? index;
+    final bool estaCompletado = modulosCompletados.contains(idModulo);
     final String urlImagen = modulo['imagen'] ?? '';
 
     return _plantillaBurbujaUI(
-      titulo: modulo['titulo'],
-      icono: modulo['icono'],
-      color: modulo['color'],
+      titulo: modulo['titulo'] ?? 'Sin título',
+      icono: modulo['icono'] ?? Icons.help_outline,
+      color: modulo['color'] ?? Colors.blue,
       estaCompletado: estaCompletado,
       urlImagen: urlImagen,
       onTap: () async {
@@ -799,7 +785,7 @@ class PantallaPrincipal extends StatelessWidget {
           ),
         );
         if (resultado == true) {
-          onModuloCompletado(index);
+          onModuloCompletado(idModulo);
           onIrAContenidos();
         }
       },
@@ -1045,30 +1031,624 @@ class PantallaPrincipal extends StatelessWidget {
 // =========================================================================
 // PANTALLAS SECUNDARIAS (PLACEHOLDERS)
 // =========================================================================
-class PantallaPerfil extends StatelessWidget {
+// =========================================================================
+// PANTALLA DE PERFIL DE USUARIO
+// =========================================================================
+class PantallaPerfil extends StatefulWidget {
   const PantallaPerfil({super.key});
 
   @override
+  State<PantallaPerfil> createState() => _PantallaPerfilState();
+}
+
+class _PantallaPerfilState extends State<PantallaPerfil> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nombreController = TextEditingController();
+  final TextEditingController _apellidosController = TextEditingController();
+
+  bool _cargando = true;
+  bool _guardando = false;
+  String _emailUsuario = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarDatosPerfil();
+  }
+
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _apellidosController.dispose();
+    super.dispose();
+  }
+
+  // Cargar datos desde Firestore
+  Future<void> _cargarDatosPerfil() async {
+    final usuario = FirebaseAuth.instance.currentUser;
+    if (usuario != null) {
+      _emailUsuario = usuario.email ?? 'Sin correo';
+      try {
+        final doc = await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(usuario.uid)
+            .get();
+
+        if (doc.exists) {
+          final datos = doc.data()!;
+          _nombreController.text = datos['nombre'] ?? '';
+          _apellidosController.text = datos['apellidos'] ?? '';
+        }
+      } catch (e) {
+        debugPrint("Error al cargar perfil: $e");
+      }
+    }
+    if (mounted) {
+      setState(() {
+        _cargando = false;
+      });
+    }
+  }
+
+  // Guardar datos en Firestore
+  Future<void> _guardarCambios() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _guardando = true;
+      });
+
+      final usuario = FirebaseAuth.instance.currentUser;
+      if (usuario != null) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(usuario.uid)
+              .set(
+                {
+                  'nombre': _nombreController.text.trim(),
+                  'apellidos': _apellidosController.text.trim(),
+                },
+                SetOptions(merge: true),
+              ); // Merge para no sobreescribir modulos/tests
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Perfil actualizado correctamente'),
+                backgroundColor: Colors.green.shade600,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+            );
+            Navigator.pop(context); // Volver a la pantalla anterior
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Error al guardar los cambios'),
+                backgroundColor: Colors.redAccent,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _guardando = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    const colorPrimario = Color.fromARGB(255, 13, 71, 161);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Mi Perfil')),
-      body: const Center(
-        child: Text('En construcción: Edición de Perfil de Usuario'),
+      backgroundColor: const Color(0xFFF5F7FA), // Fondo claro
+      appBar: AppBar(
+        title: const Text(
+          'Mi Perfil',
+          style: TextStyle(fontWeight: FontWeight.bold, color: colorPrimario),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: colorPrimario),
       ),
+      body: _cargando
+          ? const Center(child: CircularProgressIndicator(color: colorPrimario))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              physics: const BouncingScrollPhysics(),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Avatar e info básica
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          const CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Color(0xFFE1F5FE),
+                            child: Icon(
+                              Icons.person,
+                              size: 60,
+                              color: colorPrimario,
+                            ),
+                          ),
+                          Container(
+                            decoration: const BoxDecoration(
+                              color: colorPrimario,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: const Icon(
+                              Icons.edit,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: Text(
+                        _emailUsuario,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+
+                    // Campos del formulario
+                    const Text(
+                      'Datos Personales',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Campo Nombre
+                    TextFormField(
+                      controller: _nombreController,
+                      decoration: InputDecoration(
+                        labelText: 'Nombre',
+                        prefixIcon: const Icon(
+                          Icons.badge_outlined,
+                          color: colorPrimario,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(
+                            color: colorPrimario,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Por favor, introduce tu nombre';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Campo Apellidos
+                    TextFormField(
+                      controller: _apellidosController,
+                      decoration: InputDecoration(
+                        labelText: 'Apellidos',
+                        prefixIcon: const Icon(
+                          Icons.people_alt_outlined,
+                          color: colorPrimario,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: const BorderSide(
+                            color: colorPrimario,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Por favor, introduce tus apellidos';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 40),
+
+                    // Botón Guardar
+                    ElevatedButton(
+                      onPressed: _guardando ? null : _guardarCambios,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorPrimario,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 3,
+                      ),
+                      child: _guardando
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : const Text(
+                              'Guardar Cambios',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }
 
-class PantallaAjustes extends StatelessWidget {
+// =========================================================================
+// PANTALLA DE AJUSTES
+// =========================================================================
+class PantallaAjustes extends StatefulWidget {
   const PantallaAjustes({super.key});
+
+  @override
+  State<PantallaAjustes> createState() => _PantallaAjustesState();
+}
+
+class _PantallaAjustesState extends State<PantallaAjustes> {
+  bool _notificacionesActivas = true;
+  bool _modoOscuro = false;
+  bool _cargandoAjustes = true;
+
+  final Color _colorPrimario = const Color.fromARGB(255, 13, 71, 161);
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarPreferenciaNotificaciones();
+  }
+
+  // Carga el estado guardado en el teléfono
+  Future<void> _cargarPreferenciaNotificaciones() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notificacionesActivas = prefs.getBool('notificaciones_activas') ?? true;
+      _cargandoAjustes = false;
+    });
+  }
+
+  // Guarda el estado en la memoria y avisa al sistema de notificaciones
+  Future<void> _cambiarPreferenciaNotificaciones(bool valor) async {
+    setState(() {
+      _notificacionesActivas = valor;
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('notificaciones_activas', valor);
+    // Avisamos a nuestro servicio para que gestione los topics de Firebase
+    await ServicioNotificaciones.establecerEstadoNotificaciones(valor);
+  }
+
+  void _mostrarAcercaDe() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.info_outline, color: _colorPrimario),
+              const SizedBox(width: 10),
+              const Text(
+                'Acerca de HyFeel',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Aplicación educativa sobre tecnologías del hidrógeno',
+                style: TextStyle(fontSize: 14),
+              ),
+              SizedBox(height: 15),
+              Text(
+                'Trabajo Fin de Grado',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              Text(
+                'Grado en Ingeniería Electrónica, Robótica y Mecatrónica.\nUniversidad de Málaga.',
+                style: TextStyle(fontSize: 13, color: Colors.black87),
+              ),
+              SizedBox(height: 15),
+              Text(
+                'Desarrollado por:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+              Text(
+                'Manuel José Salamanca Tejada.',
+                style: TextStyle(fontSize: 13, color: Colors.black87),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cerrar', style: TextStyle(color: _colorPrimario)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _construirSeccion(String titulo, List<Widget> hijos) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16, bottom: 8, top: 16),
+          child: Text(
+            titulo,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: _colorPrimario.withValues(alpha: 0.8),
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(children: hijos),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
-      body: const Center(
-        child: Text('En construcción: Configuración y Preferencias'),
+      backgroundColor: const Color(0xFFF5F7FA),
+      appBar: AppBar(
+        title: Text(
+          'Ajustes',
+          style: TextStyle(fontWeight: FontWeight.bold, color: _colorPrimario),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: _colorPrimario),
       ),
+      body: _cargandoAjustes
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              physics: const BouncingScrollPhysics(),
+              children: [
+                // SECCIÓN: PREFERENCIAS
+                _construirSeccion('PREFERENCIAS', [
+                  SwitchListTile(
+                    title: const Text(
+                      'Notificaciones',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    subtitle: const Text(
+                      'Avisos de nuevos tests y logros',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    secondary: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.notifications_active_outlined,
+                        color: Colors.orange,
+                      ),
+                    ),
+                    activeThumbColor: _colorPrimario,
+                    value: _notificacionesActivas,
+                    onChanged: (bool valor) {
+                      _cambiarPreferenciaNotificaciones(valor);
+                    },
+                  ),
+                  const Divider(height: 1, indent: 60, endIndent: 20),
+                  SwitchListTile(
+                    title: const Text(
+                      'Modo Oscuro',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    subtitle: const Text(
+                      'Cambiar la apariencia de la app',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    secondary: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.dark_mode_outlined,
+                        color: Colors.purple,
+                      ),
+                    ),
+                    activeThumbColor: _colorPrimario,
+                    value: _modoOscuro,
+                    onChanged: (bool valor) {
+                      setState(() {
+                        _modoOscuro = valor;
+                      });
+                    },
+                  ),
+                ]),
+
+                const SizedBox(height: 10),
+
+                // SECCIÓN: CUENTA
+                _construirSeccion('CUENTA', [
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.lock_outline, color: Colors.blue),
+                    ),
+                    title: const Text(
+                      'Cambiar contraseña',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Función en desarrollo')),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 60, endIndent: 20),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline,
+                        color: Colors.red,
+                      ),
+                    ),
+                    title: const Text(
+                      'Eliminar cuenta',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Colors.red,
+                      ),
+                    ),
+                    onTap: () {
+                      // Lógica para eliminar cuenta
+                    },
+                  ),
+                ]),
+
+                const SizedBox(height: 10),
+
+                // SECCIÓN: INFORMACIÓN
+                _construirSeccion('INFORMACIÓN', [
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.teal.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.description_outlined,
+                        color: Colors.teal,
+                      ),
+                    ),
+                    title: const Text(
+                      'Términos y Privacidad',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PantallaTerminos(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 60, endIndent: 20),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.indigo.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.info_outline,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                    title: const Text(
+                      'Acerca de la app',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: _mostrarAcercaDe,
+                  ),
+                ]),
+
+                const SizedBox(height: 40),
+                Center(
+                  child: Text(
+                    'HyFeel v1.0.0',
+                    style: TextStyle(
+                      color: Colors.grey.shade500,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main.dart';
+import 'terminos.dart';
 
 // ============================================================================
 // PUERTA DE ENLACE (AUTH GATE)
@@ -300,6 +301,9 @@ class _PantallaLoginState extends State<PantallaLogin> {
 // ============================================================================
 // PANTALLA DE REGISTRO AMPLIADA
 // ============================================================================
+// ============================================================================
+// PANTALLA DE REGISTRO AMPLIADA (CON TÉRMINOS Y PRIVACIDAD)
+// ============================================================================
 class PantallaRegistro extends StatefulWidget {
   const PantallaRegistro({super.key});
 
@@ -317,6 +321,7 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
   final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _terminosAceptados = false; // NUEVA VARIABLE PARA LOS TÉRMINOS
 
   Future<void> _registrarUsuario() async {
     // 1. Validación local básica
@@ -333,6 +338,19 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Por favor, rellena tus datos personales.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // VALIDACIÓN DE TÉRMINOS
+    if (!_terminosAceptados) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Debes aceptar la Política de Privacidad para continuar.',
+          ),
           backgroundColor: Colors.orange,
         ),
       );
@@ -360,6 +378,9 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
             'fechaRegistro': FieldValue.serverTimestamp(),
             'modulosCompletados': [],
             'testsCompletados': [],
+            // NUEVOS CAMPOS LEGALES:
+            'terminosAceptados': true,
+            'fechaAceptacion': FieldValue.serverTimestamp(),
           });
 
       if (mounted) Navigator.pop(context);
@@ -493,8 +514,58 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                         etiqueta: 'Confirmar Contraseña',
                         ocultarTexto: true,
                       ),
+
                       const SizedBox(height: 10),
 
+                      // --- NUEVA SECCIÓN: CHECKBOX DE TÉRMINOS ---
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Checkbox(
+                            value: _terminosAceptados,
+                            activeColor: const Color(0xFF01579B),
+                            onChanged: (bool? valor) {
+                              setState(() {
+                                _terminosAceptados = valor ?? false;
+                              });
+                            },
+                          ),
+
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () async {
+                                // Esperamos a ver qué devuelve la PantallaTerminos
+                                final bool? aceptado = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PantallaTerminos(),
+                                  ),
+                                );
+
+                                // Si el usuario pulsó el botón "Aceptar" en la otra pantalla, marcamos el tick
+                                if (aceptado == true) {
+                                  setState(() {
+                                    _terminosAceptados = true;
+                                  });
+                                }
+                              },
+                              child: const Text(
+                                'He leído y acepto la Política de Privacidad y Condiciones de Uso.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Color(0xFF01579B),
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // -------------------------------------------
                       _isLoading
                           ? const CircularProgressIndicator()
                           : SizedBox(
