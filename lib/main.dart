@@ -262,6 +262,8 @@ class _PaginaBaseState extends State<PaginaBase> {
     }
 
     final usuarioActual = FirebaseAuth.instance.currentUser;
+    // Calculamos el espacio inferior seguro del dispositivo
+    final paddingInferior = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       drawerScrimColor: Colors.black.withValues(alpha: 0.3),
@@ -402,9 +404,11 @@ class _PaginaBaseState extends State<PaginaBase> {
                   ),
                   const SizedBox(height: 10),
 
+                  // AQUÍ ESTÁ EL CAMBIO PRINCIPAL: EL LISTVIEW AHORA ENGLOBA TODO EL RESTO DEL MENÚ
                   Expanded(
                     child: ListView(
-                      padding: EdgeInsets.zero,
+                      // El padding dinámico evita que el último botón choque con los controles de navegación
+                      padding: EdgeInsets.only(bottom: 20 + paddingInferior),
                       physics: const BouncingScrollPhysics(),
                       children: [
                         _construirElementoMenu(
@@ -508,42 +512,45 @@ class _PaginaBaseState extends State<PaginaBase> {
                             },
                           ),
                         ),
-                      ],
-                    ),
-                  ),
 
-                  Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 20,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.redAccent.withValues(alpha: 0.3),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: ListTile(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      leading: const Icon(
-                        Icons.logout,
-                        color: Colors.redAccent,
-                      ),
-                      title: const Text(
-                        'Cerrar Sesión',
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 10),
+
+                        // BOTÓN CERRAR SESIÓN (AHORA DENTRO DEL LISTVIEW)
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.redAccent.withValues(alpha: 0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: ListTile(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            leading: const Icon(
+                              Icons.logout,
+                              color: Colors.redAccent,
+                            ),
+                            title: const Text(
+                              'Cerrar Sesión',
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            onTap: () async {
+                              Navigator.pop(context);
+                              await FirebaseAuth.instance.signOut();
+                            },
+                          ),
                         ),
-                      ),
-                      onTap: () async {
-                        Navigator.pop(context);
-                        await FirebaseAuth.instance.signOut();
-                      },
+                      ],
                     ),
                   ),
                 ],
@@ -689,7 +696,7 @@ class PantallaPrincipal extends StatelessWidget {
           ),
           const SizedBox(height: 15),
 
-          // CARRUSEL TEORÍA (CORREGIDO PARA LEER LA LISTA PLANA)
+          // CARRUSEL TEORÍA
           SizedBox(
             height: altoCarrusel,
             child: ListView.builder(
@@ -706,7 +713,7 @@ class PantallaPrincipal extends StatelessWidget {
                     child: index < 4 && index < modulosHidrogenoGlobal.length
                         ? _construirBurbujaTeoria(
                             context,
-                            modulosHidrogenoGlobal[index], // <-- Extrae el módulo mapeado correctamente
+                            modulosHidrogenoGlobal[index],
                             index,
                           )
                         : _construirBurbujaVerMas(onIrAContenidos, Colors.blue),
@@ -1127,8 +1134,8 @@ class _PantallaPerfilState extends State<PantallaPerfil> {
         } catch (e) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Error al guardar los cambios'),
+              const SnackBar(
+                content: Text('Error al guardar los cambios'),
                 backgroundColor: Colors.redAccent,
                 behavior: SnackBarBehavior.floating,
               ),
@@ -1331,7 +1338,6 @@ class PantallaAjustes extends StatefulWidget {
 
 class _PantallaAjustesState extends State<PantallaAjustes> {
   bool _notificacionesActivas = true;
-  bool _modoOscuro = false;
   bool _cargandoAjustes = true;
 
   final Color _colorPrimario = const Color.fromARGB(255, 13, 71, 161);
@@ -1361,6 +1367,169 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
     await prefs.setBool('notificaciones_activas', valor);
     // Avisamos a nuestro servicio para que gestione los topics de Firebase
     await ServicioNotificaciones.establecerEstadoNotificaciones(valor);
+  }
+
+  // =========================================================================
+  // MÉTODOS DE ACCIÓN Y DIÁLOGOS DE CONFIRMACIÓN
+  // =========================================================================
+
+  Future<bool?> _mostrarDialogoConfirmacion(
+    String titulo,
+    String mensaje,
+    Color colorPeligro,
+  ) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: colorPeligro),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  titulo,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(mensaje),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: Colors.black54),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorPeligro,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text('Sí, estoy seguro'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _cambiarContrasena() async {
+    final usuario = FirebaseAuth.instance.currentUser;
+    if (usuario != null && usuario.email != null) {
+      try {
+        await FirebaseAuth.instance.sendPasswordResetEmail(
+          email: usuario.email!,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Se ha enviado un correo a ${usuario.email} para cambiar tu contraseña.',
+              ),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Error al enviar el correo de recuperación.'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _borrarProgreso() async {
+    final confirmar = await _mostrarDialogoConfirmacion(
+      'Borrar Progreso',
+      '¿Estás totalmente seguro de que quieres reiniciar tu progreso? Se perderán todos los módulos y tests completados. Esta acción NO se puede deshacer.',
+      Colors.orange,
+    );
+
+    if (confirmar == true) {
+      final usuario = FirebaseAuth.instance.currentUser;
+      if (usuario != null) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(usuario.uid)
+              .update({'modulosCompletados': [], 'testsCompletados': []});
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Tu progreso ha sido reiniciado con éxito.'),
+                backgroundColor: Colors.orange,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        } catch (e) {
+          debugPrint("Error borrando progreso: $e");
+        }
+      }
+    }
+  }
+
+  Future<void> _eliminarCuenta() async {
+    final confirmar = await _mostrarDialogoConfirmacion(
+      'Eliminar Cuenta',
+      '¿Estás seguro de que deseas eliminar tu cuenta permanentemente? Se borrarán todos tus datos de HyFeel y tu acceso. Esta acción NO se puede deshacer.',
+      Colors.redAccent,
+    );
+
+    if (confirmar == true) {
+      try {
+        final usuario = FirebaseAuth.instance.currentUser;
+        if (usuario != null) {
+          // Primero borramos sus datos de la base de datos
+          await FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(usuario.uid)
+              .delete();
+          // Luego eliminamos la cuenta de autenticación
+          await usuario.delete();
+
+          if (mounted) {
+            // Regresamos a la puerta de autenticación/login
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          }
+        }
+      } on FirebaseAuthException catch (e) {
+        if (e.code == 'requires-recent-login' && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Por seguridad, debes cerrar sesión y volver a entrar antes de poder eliminar tu cuenta.',
+              ),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint("Error eliminando cuenta: $e");
+      }
+    }
   }
 
   void _mostrarAcercaDe() {
@@ -1502,40 +1671,11 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
                       _cambiarPreferenciaNotificaciones(valor);
                     },
                   ),
-                  const Divider(height: 1, indent: 60, endIndent: 20),
-                  SwitchListTile(
-                    title: const Text(
-                      'Modo Oscuro',
-                      style: TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    subtitle: const Text(
-                      'Cambiar la apariencia de la app',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    secondary: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.purple.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.dark_mode_outlined,
-                        color: Colors.purple,
-                      ),
-                    ),
-                    activeThumbColor: _colorPrimario,
-                    value: _modoOscuro,
-                    onChanged: (bool valor) {
-                      setState(() {
-                        _modoOscuro = valor;
-                      });
-                    },
-                  ),
                 ]),
 
                 const SizedBox(height: 10),
 
-                // SECCIÓN: CUENTA
+                // SECCIÓN: CUENTA Y PROGRESO
                 _construirSeccion('CUENTA', [
                   ListTile(
                     leading: Container(
@@ -1544,20 +1684,42 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
                         color: Colors.blue.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.lock_outline, color: Colors.blue),
+                      child: const Icon(
+                        Icons.lock_reset_outlined,
+                        color: Colors.blue,
+                      ),
                     ),
                     title: const Text(
                       'Cambiar contraseña',
                       style: TextStyle(fontWeight: FontWeight.w500),
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Función en desarrollo')),
-                      );
-                    },
+                    onTap: _cambiarContrasena,
                   ),
                   const Divider(height: 1, indent: 60, endIndent: 20),
+
+                  // Nuevo botón: Borrar Progreso
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.restart_alt_outlined,
+                        color: Colors.orange,
+                      ),
+                    ),
+                    title: const Text(
+                      'Borrar Progreso',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: _borrarProgreso,
+                  ),
+                  const Divider(height: 1, indent: 60, endIndent: 20),
+
                   ListTile(
                     leading: Container(
                       padding: const EdgeInsets.all(8),
@@ -1566,7 +1728,7 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.delete_outline,
+                        Icons.delete_forever_outlined,
                         color: Colors.red,
                       ),
                     ),
@@ -1577,9 +1739,7 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
                         color: Colors.red,
                       ),
                     ),
-                    onTap: () {
-                      // Lógica para eliminar cuenta
-                    },
+                    onTap: _eliminarCuenta,
                   ),
                 ]),
 

@@ -148,29 +148,30 @@ class _PantallaTerminosState extends State<PantallaTerminos> {
 
                   _construirSeccion(
                     '2. Naturaleza Bidireccional de HyFeel',
-                    'HyFeel no es solo una herramienta educativa, sino un ecosistema bidireccional. Mientras tú adquieres conocimientos sobre la tecnología del hidrógeno y las energías renovables, los datos generales de uso nos ayudan a comprender las tendencias de aprendizaje y detectar las áreas donde existen mayores dificultades o lagunas de conocimiento.',
+                    'HyFeel no es solo una herramienta educativa, sino un ecosistema de investigación. Mientras adquieres conocimientos sobre la tecnología del hidrógeno, los datos generales de uso nos permiten generar métricas de valor sobre las tendencias de aprendizaje, detectar dificultades formativas y evaluar el interés demográfico en el sector del hidrógeno.',
                   ),
 
                   _construirSeccion(
                     '3. Datos Recopilados',
-                    'Para el correcto funcionamiento de la aplicación y la consecución de los fines descritos, recopilamos:\n'
-                        '• Datos de perfil: Nombre, apellidos y correo electrónico.\n'
-                        '• Datos de progreso: Módulos completados y resultados de los tests de evaluación.\n'
-                        '• Métricas de uso: Tiempo de permanencia y uso en cada pantalla de la aplicación.',
+                    'Para el correcto funcionamiento de la plataforma y la extracción de métricas, recopilamos:\n\n'
+                        '• Datos de identidad: Nombre, apellidos y correo electrónico (estrictamente privados).\n'
+                        '• Datos demográficos y de contexto: Ciudad/región de conexión (sin rastreo GPS exacto) y perfil profesional o académico (si se proporciona).\n'
+                        '• Métricas de rendimiento: Módulos completados, tasa de acierto/fallo en los tests y tiempos de retención por pantalla.\n'
+                        '• Feedback cualitativo: Respuestas a encuestas de satisfacción, valoraciones y sugerencias de mejora introducidas voluntariamente.',
                   ),
 
                   _construirSeccion(
-                    '4. Uso y Cesión de Datos a Terceros',
-                    'Tu privacidad está garantizada. Los datos personales (nombre, apellidos y correo) son estrictamente confidenciales y se utilizan únicamente para mantener tu sesión y progreso.\n\n'
-                        'Sin embargo, los datos relativos al progreso, resultados de tests y tiempos de uso son sometidos a un proceso riguroso de ANONIMIZACIÓN TOTAL. Estos conjuntos de datos anonimizados, imposibles de vincular a tu identidad, podrán ser licenciados (bajo modelo de pago) a investigadores, instituciones educativas o entidades científicas que deseen analizar métricas de aprendizaje y comprensión del sector energético.',
+                    '4. Uso, Comercialización y Cesión a Terceros',
+                    'Tus datos personales directos (nombre, apellidos y correo electrónico) son confidenciales, NO se venden ni se ceden a terceros, y se utilizan exclusivamente para gestionar tu cuenta.\n\n'
+                        'Sin embargo, la información relativa a tu progreso, demografía y feedback es sometida a un proceso de ANONIMIZACIÓN ABSOLUTA. Al aceptar estos términos, otorgas tu consentimiento explícito para que estos datos estadísticos agrupados (imposibles de vincular a tu identidad real) puedan ser almacenados, publicados o comercializados bajo licencia a terceros (como investigadores, universidades o empresas del sector energético) con fines de estudio analítico y desarrollo del sector.',
                   ),
 
                   _construirSeccion(
-                    '5. Tus Derechos',
-                    'Como usuario, conservas en todo momento el derecho a acceder, rectificar o solicitar la eliminación de tus datos personales, así como a solicitar una copia de los mismos.\n\n'
+                    '5. Tus Derechos (RGPD)',
+                    'Como usuario, conservas en todo momento el derecho a acceder, rectificar, limitar o solicitar la eliminación de tus datos personales.\n\n'
                         'Puedes ejercer estos derechos de dos maneras:\n'
                         '1. Dirigiendo un correo electrónico a la dirección: manueljsalamancatejada@gmail.com\n'
-                        '2. Utilizando la función "Eliminar cuenta" disponible en la sección de Ajustes de la aplicación, asegurándote de marcar la opción para borrar permanentemente tus registros de nuestra base de datos.',
+                        '2. Utilizando la función "Eliminar cuenta" disponible en la sección de Ajustes de la aplicación, lo cual borrará permanentemente tus registros vinculados de nuestra base de datos activa.',
                   ),
 
                   const SizedBox(height: 20),
