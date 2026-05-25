@@ -13,6 +13,7 @@ import 'connect.dart';
 import 'auth.dart';
 import 'terminos.dart';
 import 'notificaciones.dart';
+import 'onboarding_popup.dart';
 
 // =========================================================================
 // GENERACIÓN DE LISTA PLANA PARA LOS CARRUSELES DE LA PANTALLA PRINCIPAL
@@ -66,7 +67,7 @@ class PaginaBase extends StatefulWidget {
   State<PaginaBase> createState() => _PaginaBaseState();
 }
 
-class _PaginaBaseState extends State<PaginaBase> {
+class _PaginaBaseState extends State<PaginaBase> with WidgetsBindingObserver {
   late int _indiceActual = 0;
 
   final Set<int> _modulosCompletados = {};
@@ -79,6 +80,70 @@ class _PaginaBaseState extends State<PaginaBase> {
     super.initState();
     _indiceActual = widget.indiceInicial;
     _cargarProgresoDesdeNube();
+
+    WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      verificarYMostrarOnboarding(context);
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // =========================================================================
+  // ANALÍTICA BLOQUE 3: CONTROL DE SESIONES Y ABANDONOS
+  // =========================================================================
+  @override
+  // =========================================================================
+  // ANALÍTICA BLOQUE 3: CONTROL DE SESIONES Y ABANDONOS
+  // =========================================================================
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    final usuario = FirebaseAuth.instance.currentUser;
+    if (usuario == null) return; // Si no está logueado, no medimos
+
+    // Diccionario para saber en qué pantalla estaba
+    final nombresPantallas = ['Inicio', 'Teoria', 'Tests', 'Monitor_ESP32'];
+    String pantallaActual = nombresPantallas[_indiceActual];
+
+    if (state == AppLifecycleState.resumed) {
+      // EL USUARIO VUELVE A ABRIR LA APP (Suma una sesión)
+      FirebaseFirestore.instance
+          .collection('metricas_analiticas')
+          .add({
+            'uid': usuario.uid,
+            'tipo_evento': 'sesion_iniciada',
+            'timestamp': FieldValue.serverTimestamp(),
+          })
+          .then((_) {
+            // Absorbe el Future para que el catchError no dé problemas
+          })
+          .catchError((e) {
+            debugPrint('Error métrica inicio sesión: $e');
+          });
+    } else if (state == AppLifecycleState.paused) {
+      // EL USUARIO MINIMIZA O CIERRA LA APP (Punto de abandono)
+      FirebaseFirestore.instance
+          .collection('metricas_analiticas')
+          .add({
+            'uid': usuario.uid,
+            'tipo_evento': 'abandono_app',
+            'pantalla_salida': pantallaActual, // Oro puro para Looker Studio
+            'timestamp': FieldValue.serverTimestamp(),
+          })
+          .then((_) {
+            // Absorbe el Future para que el catchError no dé problemas
+          })
+          .catchError((e) {
+            debugPrint('Error métrica abandono: $e');
+          });
+    }
   }
 
   // =========================================================================
@@ -404,7 +469,6 @@ class _PaginaBaseState extends State<PaginaBase> {
                   ),
                   const SizedBox(height: 10),
 
-                  // AQUÍ ESTÁ EL CAMBIO PRINCIPAL: EL LISTVIEW AHORA ENGLOBA TODO EL RESTO DEL MENÚ
                   Expanded(
                     child: ListView(
                       // El padding dinámico evita que el último botón choque con los controles de navegación
@@ -1437,7 +1501,7 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                'Se ha enviado un correo a ${usuario.email} para cambiar tu contraseña.',
+                'Se ha enviado un correo a ${usuario.email} para cambiar tu contraseña. Revisa la carpeta de spam. ',
               ),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
@@ -1497,39 +1561,150 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
     );
 
     if (confirmar == true) {
-      try {
-        final usuario = FirebaseAuth.instance.currentUser;
-        if (usuario != null) {
-          // Primero borramos sus datos de la base de datos
+      final usuario = FirebaseAuth.instance.currentUser;
+      if (usuario != null) {
+        try {
+          // 1. Guardamos el UID antes de que la cuenta desaparezca
+          String uidUsuario = usuario.uid;
+
+          // 2. Borramos su progreso de Firestore
           await FirebaseFirestore.instance
               .collection('usuarios')
-              .doc(usuario.uid)
+              .doc(uidUsuario)
               .delete();
-          // Luego eliminamos la cuenta de autenticación
-          await usuario.delete();
 
+          // 3. Eliminamos la cuenta de Auth
+          await usuario.delete();
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('seenOnboarding');
+
+          // 4. Lo mandamos al login limpiamente
           if (mounted) {
-            // Regresamos a la puerta de autenticación/login
-            Navigator.of(context).popUntil((route) => route.isFirst);
-          }
-        }
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'requires-recent-login' && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Por seguridad, debes cerrar sesión y volver a entrar antes de poder eliminar tu cuenta.',
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => const PuertaAutenticacion(),
               ),
-              backgroundColor: Colors.redAccent,
-              behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 4),
-            ),
-          );
+              (Route<dynamic> route) => false,
+            );
+          }
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'requires-recent-login') {
+            // AQUÍ ESTÁ LA MAGIA: En lugar de echarlo, le pedimos la contraseña
+            if (mounted) {
+              await _pedirContrasenaParaReautenticar(usuario);
+            }
+          } else {
+            debugPrint("Error de Firebase Auth: ${e.message}");
+          }
+        } catch (e) {
+          debugPrint("Error general eliminando cuenta: $e");
         }
-      } catch (e) {
-        debugPrint("Error eliminando cuenta: $e");
       }
     }
+  }
+
+  // --- NUEVA FUNCIÓN AUXILIAR PARA PEDIR CONTRASEÑA ---
+  Future<void> _pedirContrasenaParaReautenticar(User usuario) async {
+    String contrasenaIntroducida = '';
+
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Autenticación necesaria',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Por motivos de seguridad, introduce tu contraseña para confirmar la eliminación de la cuenta.',
+              ),
+              const SizedBox(height: 15),
+              TextField(
+                obscureText: true, // Oculta los caracteres
+                decoration: InputDecoration(
+                  labelText: 'Contraseña',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  prefixIcon: const Icon(Icons.lock_outline),
+                ),
+                onChanged: (valor) => contrasenaIntroducida = valor,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(context).pop(), // Cancela la operación
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: Colors.black54),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                if (contrasenaIntroducida.isEmpty) return;
+
+                try {
+                  // 1. Creamos la credencial temporal con su correo y la contraseña que acaba de escribir
+                  AuthCredential credencial = EmailAuthProvider.credential(
+                    email: usuario.email!,
+                    password: contrasenaIntroducida,
+                  );
+
+                  // 2. Refrescamos la sesión en Firebase (Reautenticar)
+                  await usuario.reauthenticateWithCredential(credencial);
+
+                  // 3. Ahora sí, Firebase nos da luz verde para destruirlo todo
+                  await FirebaseFirestore.instance
+                      .collection('usuarios')
+                      .doc(usuario.uid)
+                      .delete();
+                  await usuario.delete();
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('seenOnboarding');
+
+                  // 4. Cerramos el pop-up y lo mandamos al inicio
+                  if (context.mounted) {
+                    Navigator.of(context).pop(); // Cierra el diálogo
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const PuertaAutenticacion(),
+                      ),
+                      (Route<dynamic> route) => false,
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    Navigator.of(context).pop(); // Cierra el diálogo
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Contraseña incorrecta. No se ha podido eliminar la cuenta.',
+                        ),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Eliminar cuenta'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _mostrarAcercaDe() {

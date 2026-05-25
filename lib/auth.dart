@@ -382,8 +382,12 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
             'terminosAceptados': true,
             'fechaAceptacion': FieldValue.serverTimestamp(),
           });
-
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const PuertaAutenticacion()),
+          (Route<dynamic> route) => false,
+        );
+      }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       String mensaje = 'Error al registrarse.';

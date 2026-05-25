@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 // ============================================================================
 // 1. MODELOS DE DATOS Y BASE DE DATOS GLOBAL
 // ============================================================================
@@ -1060,7 +1063,7 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
   }
 
   void _iniciarTemporizador() {
-    _tiempoRestante = 15;
+    _tiempoRestante = 20;
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_tiempoRestante > 0) {
@@ -1073,6 +1076,45 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
     });
   }
 
+  // --- NUEVA FUNCIÓN ANALÍTICA ---
+  Future<void> _enviarMetricasTest() async {
+    final usuario = FirebaseAuth.instance.currentUser;
+    if (usuario == null) return; // Si por lo que sea no hay sesión, no enviamos
+
+    int aciertos = 0;
+    List<String> fallos = []; // Guardaremos el texto de las preguntas falladas
+
+    // Calculamos los resultados en base a las respuestas hasta el momento
+    for (int i = 0; i < widget.modulo.preguntas.length; i++) {
+      if (_respuestasUsuario[i] == widget.modulo.preguntas[i].indiceCorrecto) {
+        aciertos++;
+      } else {
+        fallos.add(widget.modulo.preguntas[i].texto);
+      }
+    }
+
+    bool aprobado = aciertos >= (widget.modulo.preguntas.length / 2);
+    double notaPorcentaje = (aciertos / widget.modulo.preguntas.length) * 100;
+
+    try {
+      await FirebaseFirestore.instance.collection('metricas_analiticas').add({
+        'uid': usuario.uid,
+        'tipo_evento': 'test_finalizado',
+        'modulo_titulo': widget.modulo.titulo,
+        'aciertos': aciertos,
+        'total_preguntas': widget.modulo.preguntas.length,
+        'nota_porcentaje': notaPorcentaje,
+        'aprobado': aprobado,
+        'preguntas_falladas':
+            fallos, // BigQuery lee esto como un array perfectamente
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('Error enviando métricas del test: $e');
+    }
+  }
+  // -------------------------------
+
   void _registrarRespuesta(int indiceSeleccionado) async {
     _timer?.cancel();
     _respuestasUsuario.add(indiceSeleccionado);
@@ -1083,6 +1125,7 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
       });
       _iniciarTemporizador();
     } else {
+      _enviarMetricasTest();
       final bool? resultadoFinal = await Navigator.push(
         context,
         MaterialPageRoute(

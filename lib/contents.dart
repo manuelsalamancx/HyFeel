@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 // =========================================================================
 // 1. BASE DE DATOS GLOBAL DE CONTENIDOS (AGRUPADA EN 3 PARTES)
 // =========================================================================
@@ -16,12 +19,12 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'imagen': 'assets/home_images/electrolisis_home.png',
         'es_imagen': true,
         'diapositivas': [
-          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/1_resultado.webp',
-          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/2_resultado.webp',
-          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/3_resultado.webp',
-          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/4_resultado.webp',
-          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/5_resultado.webp',
-          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/1.IntroduccionWebp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/1_Intro_Webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/1_Intro_Webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/1_Intro_Webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/1_Intro_Webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/1_Intro_Webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/1_Intro_Webp/6_resultado.webp',
         ],
       },
       {
@@ -30,9 +33,21 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'icono': Icons.science,
         'color': Colors.teal,
         'imagen': 'assets/home_images/electrolisis_home.png',
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'Propiedades Físicas:\nGas incoloro, inodoro, insípido y altamente inflamable. Su densidad energética por masa es excelente (120 MJ/kg), casi el triple que la gasolina.',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/12_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/13_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/14_resultado.webp',
         ],
       },
       {
@@ -41,9 +56,28 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'icono': Icons.looks,
         'color': Colors.teal,
         'imagen': 'assets/home_images/electrolisis_home.png',
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'Propiedades Físicas:\nGas incoloro, inodoro, insípido y altamente inflamable. Su densidad energética por masa es excelente (120 MJ/kg), casi el triple que la gasolina.',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/12_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/13_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/14_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/15_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/16_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/17_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/18_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/19_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/20_resultado.webp',
         ],
       },
       {
@@ -52,9 +86,31 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'icono': Icons.category,
         'color': Colors.teal,
         'imagen': 'assets/home_images/electrolisis_home.png',
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'Propiedades Físicas:\nGas incoloro, inodoro, insípido y altamente inflamable. Su densidad energética por masa es excelente (120 MJ/kg), casi el triple que la gasolina.',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/12_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/13_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/14_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/15_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/16_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/17_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/18_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/19_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/20_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/21_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/22_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/23_resultado.webp',
         ],
       },
     ],
@@ -68,11 +124,25 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'icono': Icons.dashboard,
         'color': Colors.green,
         'imagen': 'assets/home_images/toyotamirai.png',
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'Una pila de combustible es un dispositivo electroquímico que realiza el proceso inverso a la electrólisis: convierte la energía química del hidrógeno directamente en energía eléctrica limpia.',
-          'A diferencia de una batería convencional, no se agota ni necesita recarga. Funciona de manera continua mientras se le suministre combustible (H₂) en el ánodo y un oxidante (O₂ del aire) en el cátodo.',
-          'El único subproducto de esta reacción es agua pura (H₂O) y calor térmico, lo que la convierte en una tecnología de cero emisiones directas de CO₂.',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/12_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/13_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/14_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/15_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/16_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/5_E_webp/17_resultado.webp',
         ],
       },
       {
@@ -81,12 +151,29 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'icono': Icons.battery_5_bar,
         'color': Colors.orange,
         'imagen': 'assets/home_images/almacenamiento-de-hidrogeno.png',
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'El hidrógeno es el elemento más ligero y menos denso del universo. Almacenarlo de forma compacta es uno de los mayores retos de la ingeniería actual.',
-          'Método 1: Compresión Gaseosa.\nSe almacena a altas presiones, típicamente a 350 o 700 bares, utilizando tanques reforzados con fibra de carbono (Tipo IV).',
-          'Método 2: Licuefacción Criogénica.\nSe enfría el gas a -253 °C para pasarlo a estado líquido, aumentando drásticamente su densidad volumétrica, pero con un alto coste energético.',
-          'Método 3: Estado Sólido.\nUso de hidruros metálicos donde el hidrógeno se absorbe en la red cristalina de ciertos metales, ofreciendo gran seguridad a baja presión.',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/12_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/13_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/14_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/15_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/16_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/17_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/18_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/19_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/20_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/6_PDC_webp/21_resultado.webp',
         ],
       },
       {
@@ -94,10 +181,33 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'titulo': 'Distribución y almacenamiento',
         'icono': Icons.local_shipping,
         'color': Colors.indigo,
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'Hidroductos:\nAdaptación de la red actual de gas natural o construcción de nuevas tuberías dedicadas exclusivamente al transporte de hidrógeno.',
-          'Portadores Químicos (LOHC):\nTransporte del hidrógeno enlazado a otras moléculas como el amoníaco (NH₃) o líquidos orgánicos para facilitar su logística en barcos.',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/12_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/13_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/14_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/15_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/16_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/17_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/18_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/19_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/20_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/21_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/22_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/23_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/24_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/7_DYA_webp/25_resultado.webp',
         ],
       },
     ],
@@ -111,10 +221,32 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'icono': Icons.data_usage,
         'color': Colors.purple,
         'imagen': 'assets/home_images/airbus_hydro.png',
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'Movilidad Pesada:\nEl hidrógeno es ideal para camiones, trenes y barcos, donde las baterías de litio son demasiado pesadas o tardan mucho en recargarse.',
-          'Industria Intensiva:\nSustitución del gas natural en procesos que requieren altas temperaturas (acero, cemento) o como materia prima química (fertilizantes).',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/12_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/13_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/14_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/15_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/16_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/17_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/18_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/19_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/20_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/21_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/22_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/23_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/8_PtosDC_webp/24_resultado.webp',
         ],
       },
       {
@@ -123,10 +255,25 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'icono': Icons.work,
         'color': Colors.redAccent,
         'imagen': 'assets/home_images/electrolisis_home.png',
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'Al ser tan ligero, en caso de fuga el hidrógeno se disipa rápidamente hacia la atmósfera, reduciendo el riesgo de explosión a nivel del suelo comparado con el GLP o la gasolina.',
-          'Requiere sensores específicos (como los que implementarás en tu ESP32) ya que las llamas de hidrógeno son casi invisibles a la luz del día.',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/12_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/13_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/14_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/15_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/16_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/9_P_webp/17_resultado.webp',
         ],
       },
       {
@@ -135,10 +282,32 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'icono': Icons.language,
         'color': Colors.lightGreen,
         'imagen': 'assets/home_images/electrolisis_home.png',
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'La "Gama de Colores" del hidrógeno clasifica su origen según las emisiones de su producción.',
-          'Gris: A partir de gas natural (con emisiones de CO₂).\nAzul: Gas natural con captura de CO₂.\nVerde: Electrólisis con energías renovables (Cero emisiones).',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/12_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/13_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/14_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/15_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/16_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/17_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/18_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/19_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/20_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/21_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/22_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/23_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/10_EYH_webp/24_resultado.webp',
         ],
       },
       {
@@ -147,19 +316,26 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'icono': Icons.emoji_people,
         'color': Colors.lightGreen,
         'imagen': 'assets/home_images/electrolisis_home.png',
-        'es_imagen': false,
+        'es_imagen': true,
         'diapositivas': [
-          'La "Gama de Colores" del hidrógeno clasifica su origen según las emisiones de su producción.',
-          'Gris: A partir de gas natural (con emisiones de CO₂).\nAzul: Gas natural con captura de CO₂.\nVerde: Electrólisis con energías renovables (Cero emisiones).',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/1_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/2_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/3_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/4_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/5_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/6_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/7_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/8_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/9_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/10_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/11_resultado.webp',
+          'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/11_MSH_webp/12_resultado.webp',
         ],
       },
     ],
   },
 ];
 
-// =========================================================================
-// 2. PANTALLA DE CONTENIDOS PRINCIPAL
-// =========================================================================
 // =========================================================================
 // 2. PANTALLA DE CONTENIDOS PRINCIPAL
 // =========================================================================
@@ -565,9 +741,14 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
   late List<String> _diapositivas;
   late PageController _pageController;
 
+  final Stopwatch _cronometro = Stopwatch();
+
   @override
   void initState() {
     super.initState();
+
+    _cronometro.start();
+
     _diapositivas = List<String>.from(
       widget.datosModulo['diapositivas'] ?? ['Contenido no disponible'],
     );
@@ -576,8 +757,36 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
 
   @override
   void dispose() {
+    _enviarMetricaTiempo();
     _pageController.dispose();
     super.dispose();
+  }
+
+  // 3. NUEVA FUNCIÓN ANALÍTICA (Fuego y olvido)
+  void _enviarMetricaTiempo() {
+    if (!_cronometro.isRunning) return; // Evita enviar datos duplicados
+
+    _cronometro.stop();
+    final int segundosInvertidos = _cronometro.elapsed.inSeconds;
+
+    final usuario = FirebaseAuth.instance.currentUser;
+    if (usuario != null && segundosInvertidos > 0) {
+      FirebaseFirestore.instance
+          .collection('metricas_analiticas')
+          .add({
+            'uid': usuario.uid,
+            'tipo_evento': 'tiempo_teoria',
+            'modulo_titulo': widget.datosModulo['titulo'],
+            'segundos_invertidos': segundosInvertidos,
+            'timestamp': FieldValue.serverTimestamp(),
+          })
+          .then((value) {
+            // Esto transforma el Future para que el catchError no dé problemas de tipos
+          })
+          .catchError((e) {
+            debugPrint('Error enviando tiempo: $e');
+          });
+    }
   }
 
   void _siguienteDiapositiva() {
@@ -587,6 +796,7 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
         curve: Curves.easeInOutCubic,
       );
     } else {
+      _enviarMetricaTiempo();
       Navigator.pop(context, true);
     }
   }
@@ -638,7 +848,7 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
                 if (esMultimedia) {
                   return CachedNetworkImage(
                     imageUrl: _diapositivas[index],
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain,
                     fadeInDuration: const Duration(milliseconds: 300),
                     placeholder: (context, url) => Center(
                       child: CircularProgressIndicator(color: colorPrincipal),
@@ -752,7 +962,10 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
                           Shadow(color: Colors.black45, blurRadius: 10),
                         ],
                       ),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _enviarMetricaTiempo();
+                      },
                     ),
                   ),
                 ],
