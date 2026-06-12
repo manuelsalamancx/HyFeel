@@ -32,7 +32,7 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'titulo': 'Fundamentos del hidrógeno',
         'icono': Icons.science,
         'color': Colors.teal,
-        'imagen': 'assets/home_images/electrolisis_home.png',
+        'imagen': 'assets/home_images/toyotamirai.png',
         'es_imagen': true,
         'diapositivas': [
           'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/2_FDH_Webp/1_resultado.webp',
@@ -55,7 +55,7 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'titulo': 'El arcoirís del hidrógeno',
         'icono': Icons.looks,
         'color': Colors.teal,
-        'imagen': 'assets/home_images/electrolisis_home.png',
+        'imagen': 'assets/home_images/airbus_hydro.png',
         'es_imagen': true,
         'diapositivas': [
           'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/3_ADH_webp/1_resultado.webp',
@@ -85,7 +85,7 @@ final List<Map<String, dynamic>> partesContenidoGlobal = [
         'titulo': 'Conceptos clave de la economía del hidrógeno',
         'icono': Icons.category,
         'color': Colors.teal,
-        'imagen': 'assets/home_images/electrolisis_home.png',
+        'imagen': 'assets/home_images/paraje_rewen.png',
         'es_imagen': true,
         'diapositivas': [
           'https://raw.githubusercontent.com/manuelsalamancx/hyfeel/main/modulos_conocimiento/4_CCEH_webp/1_resultado.webp',
@@ -531,7 +531,7 @@ class PantallaContenidos extends StatelessWidget {
     );
   }
 
-  // WIDGET CABECERA DE BLOQUES MODERNA
+  // WIDGET CABECERA DE BLOQUES
   Widget _construirCabeceraBloque(
     String titulo,
     bool parteDesbloqueada,
@@ -792,7 +792,7 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
   void _siguienteDiapositiva() {
     if (_indiceActual < _diapositivas.length - 1) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOutCubic,
       );
     } else {
@@ -804,7 +804,7 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
   void _anteriorDiapositiva() {
     if (_indiceActual > 0) {
       _pageController.previousPage(
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOutCubic,
       );
     }
@@ -963,8 +963,12 @@ class _PantallaHistoriaTeoriaState extends State<PantallaHistoriaTeoria> {
                         ],
                       ),
                       onPressed: () {
-                        Navigator.pop(context);
                         _enviarMetricaTiempo();
+                        if (_indiceActual == _diapositivas.length - 1) {
+                          Navigator.pop(context, true);
+                        } else {
+                          Navigator.pop(context);
+                        }
                       },
                     ),
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui'; // Necesario para ImageFilter.blur
+import 'dart:io'; // 👈 Añade esta línea junto a tus otros imports+
 
 import 'package:firebase_core/firebase_core.dart'; //base de datos
 import 'firebase_options.dart';
@@ -14,6 +15,8 @@ import 'auth.dart';
 import 'terminos.dart';
 import 'notificaciones.dart';
 import 'onboarding_popup.dart';
+import 'logros.dart';
+import 'referencias.dart'; // Añade esta línea con el resto de tus imports
 
 // =========================================================================
 // GENERACIÓN DE LISTA PLANA PARA LOS CARRUSELES DE LA PANTALLA PRINCIPAL
@@ -94,13 +97,12 @@ class _PaginaBaseState extends State<PaginaBase> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  // =========================================================================
-  // ANALÍTICA BLOQUE 3: CONTROL DE SESIONES Y ABANDONOS
-  // =========================================================================
   @override
   // =========================================================================
   // ANALÍTICA BLOQUE 3: CONTROL DE SESIONES Y ABANDONOS
   // =========================================================================
+  static DateTime? _ultimoAbandono;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
@@ -129,6 +131,13 @@ class _PaginaBaseState extends State<PaginaBase> with WidgetsBindingObserver {
           });
     } else if (state == AppLifecycleState.paused) {
       // EL USUARIO MINIMIZA O CIERRA LA APP (Punto de abandono)
+
+      final ahora = DateTime.now();
+      if (_ultimoAbandono != null &&
+          ahora.difference(_ultimoAbandono!).inSeconds < 2) {
+        return;
+      }
+      _ultimoAbandono = ahora;
       FirebaseFirestore.instance
           .collection('metricas_analiticas')
           .add({
@@ -432,13 +441,46 @@ class _PaginaBaseState extends State<PaginaBase> with WidgetsBindingObserver {
                               ),
                             ),
                             const SizedBox(height: 15),
-                            Text(
-                              nombreCompleto,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                              ),
+                            // FILA CON NOMBRE E INSIGNIA
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    nombreCompleto,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // CHIP DE LA INSIGNIA
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.shade600,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    GestorLogros.obtenerInsignia(
+                                      GestorLogros.contarLogrosCompletados(
+                                        _modulosCompletados.length,
+                                        _testsCompletados.length,
+                                      ),
+                                    ),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 5),
                             Text(
@@ -492,10 +534,48 @@ class _PaginaBaseState extends State<PaginaBase> with WidgetsBindingObserver {
                         ),
                         _construirElementoMenu(
                           icono: Icons.settings_input_antenna_outlined,
-                          texto: 'Monitorización ESP32',
+                          texto: 'Monitorización',
                           indice: 3,
                         ),
-
+                        Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: ListTile(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            leading: const Icon(
+                              Icons.emoji_events_outlined,
+                              color: Colors.amber,
+                            ),
+                            title: const Text(
+                              'Mis Logros',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.pop(context); // Cierra el Drawer
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PantallaLogros(
+                                    modulosCompletados:
+                                        _modulosCompletados.length,
+                                    testsCompletados: _testsCompletados.length,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 24,
@@ -1533,17 +1613,60 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
       final usuario = FirebaseAuth.instance.currentUser;
       if (usuario != null) {
         try {
+          // 1. Borramos el progreso en Firestore de forma silenciosa
           await FirebaseFirestore.instance
               .collection('usuarios')
               .doc(usuario.uid)
               .update({'modulosCompletados': [], 'testsCompletados': []});
+
+          // 2. Mostramos la ventana obligatoria de salida de la aplicación
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Tu progreso ha sido reiniciado con éxito.'),
-                backgroundColor: Colors.orange,
-                behavior: SnackBarBehavior.floating,
-              ),
+            showDialog(
+              context: context,
+              barrierDismissible:
+                  false, // Evita que pinchen fuera para cerrar la ventana
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  title: Row(
+                    children: [
+                      Icon(
+                        Icons.power_settings_new_rounded,
+                        color: Colors.orange.shade700,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Reiniciando...',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  content: const Text(
+                    'Tu progreso se ha eliminado correctamente. Al pulsar aceptar, la aplicación se cerrará por completo para aplicar los cambios.',
+                  ),
+                  actions: [
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 13, 71, 161),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: () {
+                        // Cierra la aplicación por completo y detiene el proceso del sistema
+                        exit(0);
+                      },
+                      child: const Text(
+                        'Aceptar',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                );
+              },
             );
           }
         } catch (e) {
@@ -1719,39 +1842,83 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
             children: [
               Icon(Icons.info_outline, color: _colorPrimario),
               const SizedBox(width: 10),
-              const Text(
-                'Acerca de HyFeel',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              // Envolver el texto en Flexible evita que el título rompa el diálogo en pantallas estrechas
+              const Flexible(
+                child: Text(
+                  'Acerca de HyFeel',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Aplicación educativa sobre tecnologías del hidrógeno',
-                style: TextStyle(fontSize: 14),
-              ),
-              SizedBox(height: 15),
-              Text(
-                'Trabajo Fin de Grado',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              Text(
-                'Grado en Ingeniería Electrónica, Robótica y Mecatrónica.\nUniversidad de Málaga.',
-                style: TextStyle(fontSize: 13, color: Colors.black87),
-              ),
-              SizedBox(height: 15),
-              Text(
-                'Desarrollado por:',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              ),
-              Text(
-                'Manuel José Salamanca Tejada.',
-                style: TextStyle(fontSize: 13, color: Colors.black87),
-              ),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.asset(
+                      'assets/images/imagengrupoenergetica.jpeg',
+                      height: 165,
+                      // Ancho fijo en lugar de double.infinity
+                      fit: BoxFit.cover,
+                      // Si la ruta falla o falta en el pubspec, muestra este icono en lugar de colgarse
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 120,
+                          width: 250,
+                          color: Colors.grey.shade200,
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.image_not_supported,
+                                color: Colors.grey,
+                                size: 40,
+                              ),
+                              SizedBox(height: 5),
+                              Text(
+                                "Imagen no encontrada",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                const Text(
+                  'Aplicación educativa sobre tecnologías del hidrógeno',
+                  style: TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 15),
+                const Text(
+                  'Trabajo Fin de Grado',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const Text(
+                  'Grado en Ingeniería Electrónica, Robótica y Mecatrónica.\nUniversidad de Málaga.',
+                  style: TextStyle(fontSize: 13, color: Colors.black87),
+                ),
+                const SizedBox(height: 15),
+                const Text(
+                  'Desarrollado por:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const Text(
+                  'Manuel José Salamanca Tejada.',
+                  style: TextStyle(fontSize: 13, color: Colors.black87),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -1944,6 +2111,33 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const PantallaTerminos(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1, indent: 60, endIndent: 20),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.purple.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.format_quote_rounded,
+                        color: Colors.purple,
+                      ),
+                    ),
+                    title: const Text(
+                      'Referencias',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PantallaReferencias(),
                         ),
                       );
                     },

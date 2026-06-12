@@ -142,36 +142,41 @@ class _PantallaTerminosState extends State<PantallaTerminos> {
                   const Divider(height: 40, thickness: 1),
 
                   _construirSeccion(
-                    '1. Responsable de los Datos',
-                    'El responsable legal del tratamiento de los datos recabados a través de la aplicación HyFeel es Manuel José Salamanca Tejada. Al utilizar esta aplicación, aceptas las prácticas descritas en este documento.',
+                    '1. Responsable del Tratamiento y Normativa Aplicable',
+                    'El responsable legal del tratamiento de los datos recabados a través de la aplicación HyFeel es Manuel José Salamanca Tejada (en adelante, "el Titular"), con correo electrónico de contacto: manueljsalamancatejada@gmail.com.\n\n'
+                        'Todas las actividades de captura, almacenamiento y procesamiento de datos se realizan en estricto cumplimiento del Reglamento General de Protección de Datos (RGPD) (UE) 2016/679 y de la Ley Orgánica 3/2018 (LOPDGDD) de Protección de Datos Personales y garantía de los derechos digitales en España.',
                   ),
 
                   _construirSeccion(
-                    '2. Naturaleza Bidireccional de HyFeel',
-                    'HyFeel no es solo una herramienta educativa, sino un ecosistema de investigación. Mientras adquieres conocimientos sobre la tecnología del hidrógeno, los datos generales de uso nos permiten generar métricas de valor sobre las tendencias de aprendizaje, detectar dificultades formativas y evaluar el interés demográfico en el sector del hidrógeno.',
+                    '2. Naturaleza del Proyecto y Base Jurídica',
+                    'HyFeel opera como una plataforma interactiva de divulgación científica (microlearning) y, de manera simultánea, como un ecosistema de investigación sociotécnica sobre la adopción de las tecnologías del hidrógeno y la transición energética.\n\n'
+                        'La base jurídica que legitima el tratamiento de sus datos es el consentimiento explícito e informado que usted otorga al aceptar estos términos. Los datos de uso general recopilados permiten auditar la efectividad pedagógica del sistema, detectar curvas de dificultad formativa y mapear el interés demográfico en energías renovables, sirviendo de fundamento para estudios académicos y sectoriales.',
                   ),
 
                   _construirSeccion(
-                    '3. Datos Recopilados',
-                    'Para el correcto funcionamiento de la plataforma y la extracción de métricas, recopilamos:\n\n'
-                        '• Datos de identidad: Nombre, apellidos y correo electrónico (estrictamente privados).\n'
-                        '• Datos demográficos y de contexto: Ciudad/región de conexión (sin rastreo GPS exacto) y perfil profesional o académico (si se proporciona).\n'
-                        '• Métricas de rendimiento: Módulos completados, tasa de acierto/fallo en los tests y tiempos de retención por pantalla.\n'
-                        '• Feedback cualitativo: Respuestas a encuestas de satisfacción, valoraciones y sugerencias de mejora introducidas voluntariamente.',
+                    '3. Clasificación y Minimización de Datos',
+                    'En virtud del principio de minimización, HyFeel solo recopila la información estrictamente necesaria para sus fines declarados, clasificada en tres categorías:\n\n'
+                        '• Datos de Identidad (PII): Correo electrónico, identificador único de usuario (UID generado por Firebase de forma automatizada) y nombre o alias de perfil.\n'
+                        '• Datos de Contexto Socioprofesional: Ciudad o región de residencia (obtenida sin rastreo por GPS exacto), sector socio-profesional actual y nivel de conocimientos previos autodeclarados sobre el hidrógeno.\n'
+                        '• Métricas de Comportamiento y Rendimiento: Registro cronológico de respuestas en cuestionarios, módulos didácticos finalizados, tasas de acierto y fallo por tema, insignias obtenidas, duración de las sesiones y pantallas de abandono.',
                   ),
 
                   _construirSeccion(
-                    '4. Uso, Comercialización y Cesión a Terceros',
-                    'Tus datos personales directos (nombre, apellidos y correo electrónico) son confidenciales, NO se venden ni se ceden a terceros, y se utilizan exclusivamente para gestionar tu cuenta.\n\n'
-                        'Sin embargo, la información relativa a tu progreso, demografía y feedback es sometida a un proceso de ANONIMIZACIÓN ABSOLUTA. Al aceptar estos términos, otorgas tu consentimiento explícito para que estos datos estadísticos agrupados (imposibles de vincular a tu identidad real) puedan ser almacenados, publicados o comercializados bajo licencia a terceros (como investigadores, universidades o empresas del sector energético) con fines de estudio analítico y desarrollo del sector.',
+                    '4. Privacidad, Anonimización Irreversible y Explotación de Datos',
+                    'Sus datos personales directos (nombre y correo electrónico) están sujetos a un estricto deber de confidencialidad y secreto profesional. Bajo ninguna circunstancia serán vendidos, alquilados ni cedidos a terceros con fines comerciales o publicitarios.\n\n'
+                        'No obstante, las métricas de rendimiento, fallos técnicos y datos de contexto sufren un proceso inmediato de ANONIMIZACIÓN ABSOLUTA E IRREVERSIBLE al transferirse a nuestra infraestructura analítica. Conforme al Considerando 26 del RGPD, la normativa de protección de datos no se aplica a la información anónima o agregada. Al aceptar estos términos, usted otorga su consentimiento inequívoco para que dichos datos disociados (imposibles de vincular con su identidad real) puedan ser analizados, publicados, transferidos o licenciados a terceros (incluyendo universidades, consultoras energéticas o entidades de investigación) con el fin de promover el desarrollo científico y de mercado del sector del hidrógeno.',
                   ),
 
                   _construirSeccion(
-                    '5. Tus Derechos (RGPD)',
-                    'Como usuario, conservas en todo momento el derecho a acceder, rectificar, limitar o solicitar la eliminación de tus datos personales.\n\n'
-                        'Puedes ejercer estos derechos de dos maneras:\n'
-                        '1. Dirigiendo un correo electrónico a la dirección: manueljsalamancatejada@gmail.com\n'
-                        '2. Utilizando la función "Eliminar cuenta" disponible en la sección de Ajustes de la aplicación, lo cual borrará permanentemente tus registros vinculados de nuestra base de datos activa.',
+                    '5. Infraestructura, Almacenamiento y Seguridad',
+                    'Los datos recolectados se procesan utilizando los servicios de computación en la nube de Google Cloud Platform (Firebase Firestore y el almacén analítico BigQuery).\n\n'
+                        'Para garantizar el cumplimiento de los estándares de seguridad europeos, la selección de servidores está restringida geográficamente a regiones dentro de la Unión Europea (UE). La información se transmite de forma cifrada mediante protocolos seguros (HTTPS/TLS) tanto en tránsito como en reposo, protegiendo el ecosistema frente a accesos no autorizados.',
+                  ),
+
+                  _construirSeccion(
+                    '6. Ejercicio de Derechos (ARCO+) y Retención',
+                    'Usted conserva en todo momento los derechos de acceso, rectificación, supresión (derecho al olvido), limitación del tratamiento y portabilidad de sus datos personales. Puede ejercerlos enviando una solicitud formal por escrito al correo electrónico manueljsalamancatejada@gmail.com.\n\n'
+                        'Asimismo, la plataforma dispone de un mecanismo automatizado de rescisión contractual mediante la función "Eliminar Cuenta" en la sección de Ajustes. La ejecución de esta acción eliminará de forma permanente e inmediata sus datos de identidad de las bases de datos activas de producción (Firestore). En cumplimiento normativo, las métricas históricas de rendimiento que ya hayan sido disociadas en el almacén analítico (BigQuery) permanecerán de forma puramente estadística, anónima y agregada, al no constituir ya datos de carácter personal.',
                   ),
 
                   const SizedBox(height: 20),

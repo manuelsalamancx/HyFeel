@@ -254,7 +254,7 @@ final List<ModuloTest> testsHidrogeno = [
     ],
   ),
   ModuloTest(
-    titulo: 'Nivel 3: Pilas de combustible y electrólisis',
+    titulo: 'Nivel 3: Pilas de combustible y electrólisis.',
     descripcion: 'Las máquinas del hidrógeno.',
     icono: Icons.battery_charging_full,
     color: Colors.green,
@@ -265,7 +265,7 @@ final List<ModuloTest> testsHidrogeno = [
         opciones: [
           'Filtrar impurezas finas del aire urbano',
           'Congelar agua mediante calor químico intenso',
-          'Separar agua el agua, usando corriente eléctrica continua',
+          'Separar el agua, usando corriente eléctrica continua',
           'Mezclar gases para producir mucha electricidad',
         ],
         indiceCorrecto: 2,
@@ -1052,7 +1052,7 @@ class PantallaCuestionario extends StatefulWidget {
 
 class _PantallaCuestionarioState extends State<PantallaCuestionario> {
   int _indicePreguntaActual = 0;
-  int _tiempoRestante = 15;
+  int _tiempoRestante = 20;
   Timer? _timer;
   final List<int> _respuestasUsuario = [];
 
@@ -1076,7 +1076,7 @@ class _PantallaCuestionarioState extends State<PantallaCuestionario> {
     });
   }
 
-  // --- NUEVA FUNCIÓN ANALÍTICA ---
+  // FUNCIÓN ENVIO METRICAS
   Future<void> _enviarMetricasTest() async {
     final usuario = FirebaseAuth.instance.currentUser;
     if (usuario == null) return; // Si por lo que sea no hay sesión, no enviamos
