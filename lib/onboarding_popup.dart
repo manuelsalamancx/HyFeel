@@ -5,44 +5,44 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void verificarYMostrarOnboarding(BuildContext context) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool seenLocally = prefs.getBool('seenOnboarding') ?? false;
+  // Obtenemos el UID antes de nada para aislar la memoria por usuario
+  String? userUid = FirebaseAuth.instance.currentUser?.uid;
+  if (userUid == null) return; // Si no hay usuario activo, cortamos
 
-  // 1. Filtro rápido: Si este móvil ya sabe que lo rellenó, salimos al instante
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  // 1. Filtro rápido: Comprobamos si ESTE usuario ya lo rellenó en ESTE móvil
+  String claveMemoriaLocal = 'onboarding_$userUid';
+  bool seenLocally = prefs.getBool(claveMemoriaLocal) ?? false;
+
   if (seenLocally) return;
 
-  // 2. Filtro definitivo en la nube: Comprobamos si el usuario actual ya existe en la colección
-  String? userUid = FirebaseAuth.instance.currentUser?.uid;
+  // 2. Filtro definitivo en la nube: Miramos directamente en su perfil de usuario
+  try {
+    var userDoc = await FirebaseFirestore.instance
+        .collection('usuarios')
+        .doc(userUid)
+        .get();
 
-  if (userUid != null) {
-    try {
-      var query = await FirebaseFirestore.instance
-          .collection('metricas_analiticas')
-          .where('uid', isEqualTo: userUid)
-          .limit(1)
-          .get();
-
-      if (query.docs.isNotEmpty) {
-        // ¡El usuario ya lo rellenó en el pasado desde otro móvil!
-        // Actualizamos la memoria de ESTE teléfono para no volver a preguntarle a Firebase
-        await prefs.setBool('seenOnboarding', true);
-        return; // Salimos sin mostrar el pop-up
+    if (userDoc.exists) {
+      var datos = userDoc.data()!;
+      // Si ya tiene la marca de completado en su perfil, guardamos local y no mostramos
+      if (datos.containsKey('onboardingCompletado') &&
+          datos['onboardingCompletado'] == true) {
+        await prefs.setBool(claveMemoriaLocal, true);
+        return;
       }
-    } catch (e) {
-      debugPrint('Error comprobando si existe el usuario: $e');
-      // Si falla la conexión, dejamos que siga y muestre el pop-up por si acaso
     }
+  } catch (e) {
+    debugPrint('Error comprobando el estado del onboarding: $e');
   }
 
-  // 3. Si llegamos aquí, es un usuario genuinamente nuevo en la app.
-  // Lanzamos el pop-up flotante con fondo difuminado
+  // 3. Si llegamos aquí, es un usuario nuevo (Clásico o Google). Lanzamos el pop-up.
   if (context.mounted) {
     showDialog(
       context: context,
-      barrierDismissible:
-          false, // Obliga a rellenarlo (no se cierra al tocar fuera)
+      barrierDismissible: false, // Obliga a rellenarlo
       builder: (BuildContext context) {
-        // Variables locales para capturar las selecciones dentro del diálogo
         String? selectedProvince;
         String? selectedProfile;
         String? selectedArea;
@@ -127,10 +127,7 @@ void verificarYMostrarOnboarding(BuildContext context) async {
         final formKey = GlobalKey<FormState>();
 
         return BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: 8.0,
-            sigmaY: 8.0,
-          ), // El difuminado de fondo
+          filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
           child: AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
@@ -242,20 +239,23 @@ void verificarYMostrarOnboarding(BuildContext context) async {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size.fromHeight(50),
+                            backgroundColor: const Color.fromARGB(
+                              255,
+                              13,
+                              71,
+                              161,
+                            ),
+                            foregroundColor: Colors.white,
                           ),
                           onPressed: () async {
                             if (!formKey.currentState!.validate()) return;
 
                             try {
-                              // Obtenemos el ID único del usuario actual logueado
-                              String? currentUserUid =
-                                  FirebaseAuth.instance.currentUser?.uid;
-
-                              // Guardamos los datos limpios vinculados a su cuenta
+                              // 1. Enviamos los datos limpios a Firebase para BigQuery
                               await FirebaseFirestore.instance
                                   .collection('metricas_analiticas')
                                   .add({
-                                    'uid': currentUserUid ?? 'anonimo',
+                                    'uid': userUid,
                                     'ciudad': selectedProvince,
                                     'perfil': selectedProfile,
                                     'area_conocimiento': selectedArea,
@@ -263,8 +263,16 @@ void verificarYMostrarOnboarding(BuildContext context) async {
                                     'timestamp': FieldValue.serverTimestamp(),
                                   });
 
-                              // Bloqueamos localmente para que nunca vuelva a saltar en este dispositivo
-                              await prefs.setBool('seenOnboarding', true);
+                              // 2. NUEVO: Marcamos en su perfil de usuario que ya lo ha completado
+                              await FirebaseFirestore.instance
+                                  .collection('usuarios')
+                                  .doc(userUid)
+                                  .set({
+                                    'onboardingCompletado': true,
+                                  }, SetOptions(merge: true));
+
+                              // 3. Bloqueamos localmente vinculado al UID
+                              await prefs.setBool(claveMemoriaLocal, true);
 
                               if (context.mounted) Navigator.of(context).pop();
                             } catch (e) {
@@ -277,7 +285,10 @@ void verificarYMostrarOnboarding(BuildContext context) async {
                               }
                             }
                           },
-                          child: const Text('Comenzar'),
+                          child: const Text(
+                            'Comenzar',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),

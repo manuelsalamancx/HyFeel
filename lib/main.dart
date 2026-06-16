@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'dart:ui'; // Necesario para ImageFilter.blur
-import 'dart:io'; // 👈 Añade esta línea junto a tus otros imports+
+import 'dart:ui';
+import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart'; //base de datos
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import 'contents.dart';
 import 'tests.dart'; //pantallas
@@ -16,7 +17,7 @@ import 'terminos.dart';
 import 'notificaciones.dart';
 import 'onboarding_popup.dart';
 import 'logros.dart';
-import 'referencias.dart'; // Añade esta línea con el resto de tus imports
+import 'referencias.dart';
 
 // =========================================================================
 // GENERACIÓN DE LISTA PLANA PARA LOS CARRUSELES DE LA PANTALLA PRINCIPAL
@@ -86,8 +87,11 @@ class _PaginaBaseState extends State<PaginaBase> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addObserver(this);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      verificarYMostrarOnboarding(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        verificarYMostrarOnboarding(context);
+      }
     });
   }
 
@@ -97,7 +101,6 @@ class _PaginaBaseState extends State<PaginaBase> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  @override
   // =========================================================================
   // ANALÍTICA BLOQUE 3: CONTROL DE SESIONES Y ABANDONOS
   // =========================================================================
@@ -690,6 +693,7 @@ class _PaginaBaseState extends State<PaginaBase> with WidgetsBindingObserver {
                             ),
                             onTap: () async {
                               Navigator.pop(context);
+                              await GoogleSignIn().signOut();
                               await FirebaseAuth.instance.signOut();
                             },
                           ),
@@ -1696,10 +1700,11 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
               .doc(uidUsuario)
               .delete();
 
-          // 3. Eliminamos la cuenta de Auth
+          // 3. Eliminamos la cuenta de Auth y limpiamos memoria
           await usuario.delete();
           final prefs = await SharedPreferences.getInstance();
           await prefs.remove('seenOnboarding');
+          await GoogleSignIn().signOut(); // Limpiamos rastro de Google
 
           // 4. Lo mandamos al login limpiamente
           if (mounted) {
@@ -1712,9 +1717,62 @@ class _PantallaAjustesState extends State<PantallaAjustes> {
           }
         } on FirebaseAuthException catch (e) {
           if (e.code == 'requires-recent-login') {
-            // AQUÍ ESTÁ LA MAGIA: En lugar de echarlo, le pedimos la contraseña
             if (mounted) {
-              await _pedirContrasenaParaReautenticar(usuario);
+              bool usaContrasena = usuario.providerData.any(
+                (p) => p.providerId == 'password',
+              );
+
+              if (usaContrasena) {
+                // Si usa correo/contraseña, le pedimos la clave
+                await _pedirContrasenaParaReautenticar(usuario);
+              } else {
+                // MAGIA PARA GOOGLE: Reautenticar automáticamente
+                try {
+                  final GoogleSignInAccount? googleUser = await GoogleSignIn()
+                      .signIn();
+                  if (googleUser != null) {
+                    final GoogleSignInAuthentication googleAuth =
+                        await googleUser.authentication;
+                    final credential = GoogleAuthProvider.credential(
+                      accessToken: googleAuth.accessToken,
+                      idToken: googleAuth.idToken,
+                    );
+
+                    // Reautenticamos a la fuerza
+                    await usuario.reauthenticateWithCredential(credential);
+
+                    // Ahora sí borramos definitivamente todo
+                    await FirebaseFirestore.instance
+                        .collection('usuarios')
+                        .doc(usuario.uid)
+                        .delete();
+                    await usuario.delete();
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.remove('seenOnboarding');
+                    await GoogleSignIn().signOut();
+
+                    if (mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const PuertaAutenticacion(),
+                        ),
+                        (Route<dynamic> route) => false,
+                      );
+                    }
+                  }
+                } catch (errorGoogle) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Acción cancelada o error al verificar tu cuenta de Google.',
+                        ),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                  }
+                }
+              }
             }
           } else {
             debugPrint("Error de Firebase Auth: ${e.message}");

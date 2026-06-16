@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
 import 'main.dart';
 import 'terminos.dart';
 
@@ -24,7 +26,16 @@ class PuertaAutenticacion extends StatelessWidget {
           );
         }
         if (snapshot.hasData) {
-          return const PaginaBase();
+          // Comprueba si el usuario está logueado Y tiene el correo verificado
+          if (snapshot.data!.emailVerified) {
+            return const PaginaBase();
+          } else {
+            // El usuario no está verificado.
+            // Usamos Future.microtask para cerrar sesión DESPUÉS de dibujar la pantalla
+            // y evitar que Flutter se quede pillado (congelado) durante el build.
+            Future.microtask(() => FirebaseAuth.instance.signOut());
+            return const PantallaLogin();
+          }
         }
         return const PantallaLogin();
       },
@@ -33,7 +44,7 @@ class PuertaAutenticacion extends StatelessWidget {
 }
 
 // ============================================================================
-// WIDGET REUTILIZABLE: CAMPO DE TEXTO MODERNO
+// WIDGETS REUTILIZABLES
 // ============================================================================
 Widget _construirCampoTextoModerno({
   required TextEditingController controlador,
@@ -74,8 +85,41 @@ Widget _construirCampoTextoModerno({
   );
 }
 
+Widget _construirBotonSocial({
+  required String texto,
+  required IconData icono,
+  required Color colorIcono,
+  required VoidCallback onPressed,
+}) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    height: 50,
+    width: double.infinity,
+    child: ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+      ),
+      onPressed: onPressed,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icono, color: colorIcono),
+          const SizedBox(width: 10),
+          Text(
+            texto,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 // ============================================================================
-// PANTALLA DE LOGIN (ACTUALIZADA CON RECUPERACIÓN DE CONTRASEÑA)
+// PANTALLA DE LOGIN
 // ============================================================================
 class PantallaLogin extends StatefulWidget {
   const PantallaLogin({super.key});
@@ -89,14 +133,33 @@ class _PantallaLoginState extends State<PantallaLogin> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  // Método para iniciar sesión
+  // Método para iniciar sesión por correo
   Future<void> _iniciarSesion() async {
     setState(() => _isLoading = true);
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      UserCredential credencial = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+
+      // Comprobar si el correo es real/verificado
+      if (credencial.user != null && !credencial.user!.emailVerified) {
+        await FirebaseAuth.instance.signOut();
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Debes verificar tu correo para poder entrar. Revisa tu bandeja de entrada o Spam.',
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+        return;
+      }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       String mensaje = 'Error al iniciar sesión.';
@@ -109,6 +172,53 @@ class _PantallaLoginState extends State<PantallaLogin> {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(mensaje), backgroundColor: Colors.redAccent),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  // Método para iniciar sesión con Google
+  Future<void> _iniciarSesionGoogle() async {
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return; // El usuario cerró el pop-up de Google
+      }
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCred = await FirebaseAuth.instance
+          .signInWithCredential(credential);
+
+      // Si es la primera vez que entra con Google, guardamos su nombre en Firestore
+      if (userCred.additionalUserInfo?.isNewUser == true) {
+        await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(userCred.user!.uid)
+            .set({
+              'nombre': userCred.user!.displayName ?? 'Usuario',
+              'apellidos': '',
+              'email': userCred.user!.email ?? '',
+              'fechaRegistro': FieldValue.serverTimestamp(),
+              'modulosCompletados': [],
+              'testsCompletados': [],
+              'terminosAceptados': true,
+            });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al iniciar sesión con Google.'),
+          backgroundColor: Colors.redAccent,
+        ),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -209,13 +319,10 @@ class _PantallaLoginState extends State<PantallaLogin> {
                       ocultarTexto: true,
                     ),
 
-                    // --- NUEVA SECCIÓN: Botón de recuperación de contraseña ---
-                    // --- NUEVA SECCIÓN: Botón de recuperación de contraseña ---
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
                         onPressed: () {
-                          // Navegación directa a la nueva pantalla
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -242,7 +349,6 @@ class _PantallaLoginState extends State<PantallaLogin> {
                         ),
                       ),
                     ),
-                    // ----------------------------------------------------------
                     const SizedBox(height: 20),
                     _isLoading
                         ? const CircularProgressIndicator()
@@ -269,6 +375,31 @@ class _PantallaLoginState extends State<PantallaLogin> {
                             ),
                           ),
                     const SizedBox(height: 20),
+
+                    // --- SECCIÓN DE INICIO SOCIAL ---
+                    const Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.black26)),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(
+                            "O entra con",
+                            style: TextStyle(color: Colors.black54),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Colors.black26)),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    _construirBotonSocial(
+                      texto: 'Continuar con Google',
+                      icono: Icons.g_mobiledata,
+                      colorIcono: Colors.red,
+                      onPressed: _iniciarSesionGoogle,
+                    ),
+
+                    // ---------------------------------
+                    const SizedBox(height: 10),
                     TextButton(
                       onPressed: () {
                         Navigator.push(
@@ -299,9 +430,6 @@ class _PantallaLoginState extends State<PantallaLogin> {
 }
 
 // ============================================================================
-// PANTALLA DE REGISTRO AMPLIADA
-// ============================================================================
-// ============================================================================
 // PANTALLA DE REGISTRO AMPLIADA (CON TÉRMINOS Y PRIVACIDAD)
 // ============================================================================
 class PantallaRegistro extends StatefulWidget {
@@ -312,24 +440,30 @@ class PantallaRegistro extends StatefulWidget {
 }
 
 class _PantallaRegistroState extends State<PantallaRegistro> {
-  // Controladores ampliados
   final _nombreController = TextEditingController();
   final _apellidosController = TextEditingController();
-  final _ciudadController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _terminosAceptados = false; // NUEVA VARIABLE PARA LOS TÉRMINOS
+  bool _terminosAceptados = false;
 
   Future<void> _registrarUsuario() async {
-    // 1. Validación local básica
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Las contraseñas no coinciden.'),
           backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+    if (_passwordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La contraseña debe tener al menos 6 caracteres.'),
+          backgroundColor: Colors.orange,
         ),
       );
       return;
@@ -343,8 +477,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
       );
       return;
     }
-
-    // VALIDACIÓN DE TÉRMINOS
     if (!_terminosAceptados) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -359,30 +491,44 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
 
     setState(() => _isLoading = true);
     try {
-      // 2. Crear credenciales en Auth
       UserCredential credencial = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
 
-      // 3. Guardar el perfil ampliado en Firestore
+      // Enviar correo de verificación
+      await credencial.user?.sendEmailVerification();
+
+      // Guardar el perfil en Firestore
       await FirebaseFirestore.instance
           .collection('usuarios')
           .doc(credencial.user!.uid)
           .set({
             'nombre': _nombreController.text.trim(),
             'apellidos': _apellidosController.text.trim(),
-            'ciudad': _ciudadController.text.trim(),
             'email': _emailController.text.trim(),
             'fechaRegistro': FieldValue.serverTimestamp(),
             'modulosCompletados': [],
             'testsCompletados': [],
-            // NUEVOS CAMPOS LEGALES:
             'terminosAceptados': true,
             'fechaAceptacion': FieldValue.serverTimestamp(),
           });
+
+      // Cerramos sesión silenciosamente para forzar la verificación.
+      await FirebaseAuth.instance.signOut();
+
       if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              '¡Registro exitoso! Revisa tu correo (y el Spam) para verificar tu cuenta antes de entrar.',
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 5),
+          ),
+        );
+
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const PuertaAutenticacion()),
           (Route<dynamic> route) => false,
@@ -395,6 +541,8 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
         mensaje = 'La contraseña debe tener al menos 6 caracteres.';
       } else if (e.code == 'email-already-in-use') {
         mensaje = 'Este correo ya está registrado.';
+      } else if (e.code == 'invalid-email') {
+        mensaje = 'El formato del correo es inválido.';
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(mensaje), backgroundColor: Colors.redAccent),
@@ -408,7 +556,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
   void dispose() {
     _nombreController.dispose();
     _apellidosController.dispose();
-    _ciudadController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -464,7 +611,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                 ),
                 const SizedBox(height: 30),
 
-                // Formulario dentro de una tarjeta translúcida
                 Container(
                   padding: const EdgeInsets.all(25),
                   decoration: BoxDecoration(
@@ -477,7 +623,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                   ),
                   child: Column(
                     children: [
-                      // Datos Personales
                       _construirCampoTextoModerno(
                         controlador: _nombreController,
                         icono: Icons.person_outline,
@@ -488,18 +633,12 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                         icono: Icons.badge_outlined,
                         etiqueta: 'Apellidos',
                       ),
-                      _construirCampoTextoModerno(
-                        controlador: _ciudadController,
-                        icono: Icons.location_city_outlined,
-                        etiqueta: 'Ciudad de residencia',
-                      ),
                       const Divider(
                         color: Colors.black12,
                         height: 30,
                         thickness: 1,
                       ),
 
-                      // Credenciales de Acceso
                       _construirCampoTextoModerno(
                         controlador: _emailController,
                         icono: Icons.email_outlined,
@@ -521,7 +660,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
 
                       const SizedBox(height: 10),
 
-                      // --- NUEVA SECCIÓN: CHECKBOX DE TÉRMINOS ---
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -534,11 +672,9 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                               });
                             },
                           ),
-
                           Expanded(
                             child: GestureDetector(
                               onTap: () async {
-                                // Esperamos a ver qué devuelve la PantallaTerminos
                                 final bool? aceptado = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -546,8 +682,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                                         const PantallaTerminos(),
                                   ),
                                 );
-
-                                // Si el usuario pulsó el botón "Aceptar" en la otra pantalla, marcamos el tick
                                 if (aceptado == true) {
                                   setState(() {
                                     _terminosAceptados = true;
@@ -569,7 +703,6 @@ class _PantallaRegistroState extends State<PantallaRegistro> {
                       ),
                       const SizedBox(height: 20),
 
-                      // -------------------------------------------
                       _isLoading
                           ? const CircularProgressIndicator()
                           : SizedBox(
@@ -647,7 +780,6 @@ class _PantallaRecuperacionState extends State<PantallaRecuperacion> {
         ),
       );
 
-      // Opcional: Volver a la pantalla de login tras enviar el correo
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
@@ -711,7 +843,6 @@ class _PantallaRecuperacionState extends State<PantallaRecuperacion> {
                 ),
                 const SizedBox(height: 15),
 
-                // Tarjeta con instrucciones y advertencia
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -761,7 +892,6 @@ class _PantallaRecuperacionState extends State<PantallaRecuperacion> {
                       ),
                       const SizedBox(height: 25),
 
-                      // Input reutilizado
                       _construirCampoTextoModerno(
                         controlador: _emailController,
                         icono: Icons.email_outlined,

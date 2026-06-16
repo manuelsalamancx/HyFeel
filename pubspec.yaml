@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   cached_network_image: ^3.3.0
+  google_sign_in: ^6.2.1
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -110,17 +111,18 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/hyfeel_ic_launcher.png"
+  image_path: "assets/images/logohyfeel.png"
   adaptive_icon_background: "#ffffff" 
-  adaptive_icon_foreground: "assets/images/hyfeel_ic_launcher.png"
+  adaptive_icon_foreground: "assets/images/logohyfeel.png"
 
-flutter_native_splash: #pantalla de inicialización
-  color: "#86BCE9" #color de fondo de seguridad
-  # configuración de la pantalla de carga con el fondo y logo de alta calidad
+flutter_native_splash: 
+  color: "#86BCE9" 
   background_image: "assets/images/background_home.png"
   
-  branding: "assets/images/hyfeel_ic_launcher.png"
-  branding_mode: center
+
+  image: "assets/images/logohyfeel.png" 
+  
   android_12:
     background_image: "assets/images/background_home.png"
-    image: "assets/images/hyfeel_ic_launcher.png"
+    # 👈 Actualiza esta ruta también para dispositivos Android recientes
+    image: "assets/images/logohyfeel.png"
